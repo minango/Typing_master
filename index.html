@@ -727,11 +727,16 @@ function loop() {
     }
 
     else if (state === "highscore") {
-        ctx.fillStyle = rgb(theme.text);
-        ctx.font = '70px "Hiragino Sans"';
-        ctx.fillText("High Scores", 250, 80);
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    ctx.fillText("High Scores", 250, 80);
 
-        const rec = records[currentMode];
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText(`単語: ${records.words.best_score} (${records.words.best_rank})`, 250, 180);
+    ctx.fillText(`短文: ${records.shorts.best_score} (${records.shorts.best_rank})`, 250, 220);
+    ctx.fillText(`長文: ${records.longs.best_score} (${records.longs.best_rank})`, 250, 260);
+}
+
         ctx.font = '30px "Hiragino Sans"';
         ctx.fillText(`最高スコア: ${rec.best_score} (${rec.best_rank})`, 250, 180);
         ctx.fillText(`最高WPM: ${rec.best_wpm}`, 250, 220);
