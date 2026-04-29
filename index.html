@@ -737,15 +737,6 @@ function loop() {
     ctx.fillText(`長文: ${records.longs.best_score} (${records.longs.best_rank})`, 250, 260);
 }
 
-        ctx.font = '30px "Hiragino Sans"';
-        ctx.fillText(`最高スコア: ${rec.best_score} (${rec.best_rank})`, 250, 180);
-        ctx.fillText(`最高WPM: ${rec.best_wpm}`, 250, 220);
-        ctx.fillText(`最高最高WPM: ${rec.best_max_wpm}`, 250, 260);
-        ctx.fillText(`最高RKPM: ${rec.best_rkpm}`, 250, 300);
-
-        ctx.fillText("Enterで戻る", 250, 360);
-    }
-
     requestAnimationFrame(loop);
 }
 
