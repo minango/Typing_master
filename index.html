@@ -109,6 +109,8 @@ const longs_hira = [
 
 // ================== ローマ字パターン ==================
 
+const MAX_CANDIDATES = 50000;
+
 function getPatterns(ch, nextCh=null) {
     const base = {
         "あ":["a"],"い":["i","yi"],"う":["u","wu","whu"],"え":["e"],"お":["o"],
@@ -163,23 +165,22 @@ function applySmall(candidates, small) {
         while (base && "aiueo".includes(base[base.length-1])) {
             base = base.slice(0, -1);
         }
-        const lastVowel = c.slice(base.length); // 例: "gi" の "i"
+        const lastVowel = c.slice(base.length);
 
-        // 既存の変態ローマ字パターン
         for (const p of table[small]) {
             newList.push(base + lastVowel + p);
+            if (newList.length >= MAX_CANDIDATES) return newList;
         }
 
-        // 標準 gyo / myo / byo / ryo / rya / ryu / ryo など
         if (lastVowel === "i") {
-            const cons = base; // "g" "m" "r" など
-            const v = normalVowel[small]; // a/u/o
-            newList.push(cons + "y" + v); // gya, gyu, gyo など
+            const cons = base;
+            const v = normalVowel[small];
+            newList.push(cons + "y" + v);
         } else {
-            // fallback: もとの母音 + ya/yu/yo
             const v = normalVowel[small];
             newList.push(base + "y" + v);
         }
+        if (newList.length >= MAX_CANDIDATES) return newList;
     }
     return newList;
 }
@@ -197,11 +198,12 @@ function buildCandidates(hira) {
         }
 
         if (ch === "ー") {
-            const newList = [];
+            const newListDash = [];
             for (const base of candidates) {
-                newList.push(base + "-");
+                newListDash.push(base + "-");
+                if (newListDash.length >= MAX_CANDIDATES) break;
             }
-            candidates = newList;
+            candidates = newListDash;
             i++;
             continue;
         }
@@ -213,10 +215,13 @@ function buildCandidates(hira) {
         for (const base of candidates) {
             for (const p of patterns) {
                 newList.push(base + p);
+                if (newList.length >= MAX_CANDIDATES) break;
             }
+            if (newList.length >= MAX_CANDIDATES) break;
         }
         candidates = newList;
         i++;
+        if (candidates.length >= MAX_CANDIDATES) break;
     }
     return candidates;
 }
@@ -510,7 +515,6 @@ canvas.addEventListener("mousedown", (e) => {
     const my = e.clientY - rect.top;
 
     if (state === "title") {
-        // テーマ切り替え
         if (mx >= settingsButton.x && mx <= settingsButton.x+settingsButton.w &&
             my >= settingsButton.y && my <= settingsButton.y+settingsButton.h) {
             const keys = Object.keys(themes);
@@ -519,7 +523,6 @@ canvas.addEventListener("mousedown", (e) => {
             return;
         }
 
-        // ハイスコア画面へ
         if (mx >= highscoreButton.x && mx <= highscoreButton.x+highscoreButton.w &&
             my >= highscoreButton.y && my <= highscoreButton.y+highscoreButton.h) {
             state = "highscore";
@@ -527,7 +530,6 @@ canvas.addEventListener("mousedown", (e) => {
             return;
         }
 
-        // モード選択
         for (const name in buttons) {
             const b = buttons[name];
             if (mx >= b.x && mx <= b.x+b.w && my >= b.y && my <= b.y+b.h) {
@@ -553,7 +555,6 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-    // ハイスコア画面でのモード切り替え
     if (state === "highscore") {
         if (e.key === "1") highscoreViewMode = "words";
         if (e.key === "2") highscoreViewMode = "shorts";
@@ -650,20 +651,17 @@ function drawTitle(theme) {
     ctx.font = '70px "Hiragino Sans"';
     ctx.fillText("TypeMaster", 240, 100);
 
-    // テーマボタン
     ctx.fillStyle = rgb(theme.button_bg);
     ctx.fillRect(settingsButton.x, settingsButton.y, settingsButton.w, settingsButton.h);
     ctx.fillStyle = rgb(theme.button_text);
     ctx.font = '30px "Hiragino Sans"';
     ctx.fillText("C", settingsButton.x+5, settingsButton.y+5);
 
-    // ハイスコアボタン
     ctx.fillStyle = rgb(theme.button_bg);
     ctx.fillRect(highscoreButton.x, highscoreButton.y, highscoreButton.w, highscoreButton.h);
     ctx.fillStyle = rgb(theme.button_text);
     ctx.fillText("H", highscoreButton.x+15, highscoreButton.y+5);
 
-    // モードボタン
     for (const name in buttons) {
         const b = buttons[name];
         ctx.fillStyle = "rgb(70,70,70)";
@@ -780,12 +778,10 @@ function drawHighscore(theme) {
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
 
-    // タイトル
     ctx.fillStyle = rgb(theme.text);
     ctx.font = '70px "Hiragino Sans"';
     ctx.fillText("High Scores", 250, 60);
 
-    // 現在の表示モード
     let label = "";
     if (highscoreViewMode === "words") label = "単語モード";
     if (highscoreViewMode === "shorts") label = "短文モード";
@@ -795,7 +791,6 @@ function drawHighscore(theme) {
     ctx.fillStyle = rgb(theme.text);
     ctx.fillText(`表示中: ${label}`, 250, 150);
 
-    // ハイスコア情報
     const rec = records[highscoreViewMode];
     ctx.font = '32px "Hiragino Sans"';
     ctx.fillText(`最高スコア: ${rec.best_score} (${rec.best_rank})`, 250, 220);
@@ -803,13 +798,11 @@ function drawHighscore(theme) {
     ctx.fillText(`最高最高WPM: ${rec.best_max_wpm}`, 250, 320);
     ctx.fillText(`最高RKPM: ${rec.best_rkpm}`, 250, 370);
 
-    // ===== 画面下に操作説明を移動 =====
     ctx.font = '24px "Hiragino Sans"';
     ctx.fillStyle = rgb(theme.subtext);
     ctx.fillText("1: 単語 / 2: 短文 / 3: 長文", 250, 430);
     ctx.fillText("Enterでタイトルに戻る", 250, 460);
 }
-
 
 // ================== メインループ ==================
 
