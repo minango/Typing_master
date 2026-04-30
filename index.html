@@ -811,23 +811,6 @@ function drawHighscore(theme) {
 }
 
 
-    let label = "";
-    if (highscoreViewMode === "words") label = "単語モード";
-    if (highscoreViewMode === "shorts") label = "短文モード";
-    if (highscoreViewMode === "longs") label = "長文モード";
-
-    ctx.fillStyle = rgb(theme.text);
-    ctx.fillText(`表示中: ${label}`, 250, 210);
-
-    const rec = records[highscoreViewMode];
-
-    ctx.font = '30px "Hiragino Sans"';
-    ctx.fillText(`最高スコア: ${rec.best_score} (${rec.best_rank})`, 250, 260);
-    ctx.fillText(`最高WPM: ${rec.best_wpm}`, 250, 300);
-    ctx.fillText(`最高最高WPM: ${rec.best_max_wpm}`, 250, 340);
-    ctx.fillText(`最高RKPM: ${rec.best_rkpm}`, 250, 380);
-}
-
 // ================== メインループ ==================
 
 function loop() {
