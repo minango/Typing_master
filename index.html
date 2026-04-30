@@ -728,34 +728,38 @@ function loop() {
 
     else if (state === "highscore") {
     ctx.fillStyle = rgb(theme.text);
+
+    // タイトル
     ctx.font = '70px "Hiragino Sans"';
     ctx.fillText("High Scores", 250, 80);
 
     ctx.font = '30px "Hiragino Sans"';
 
-    // 単語
-    ctx.fillText(`【単語】`, 250, 150);
+    // ===== 単語 =====
+    ctx.fillText("【単語】", 250, 150);
     ctx.fillText(`スコア: ${records.words.best_score} (${records.words.best_rank})`, 250, 180);
     ctx.fillText(`WPM: ${records.words.best_wpm}`, 250, 210);
     ctx.fillText(`最高WPM: ${records.words.best_max_wpm}`, 250, 240);
     ctx.fillText(`RKPM: ${records.words.best_rkpm}`, 250, 270);
 
-    // 短文
-    ctx.fillText(`【短文】`, 250, 310);
-    ctx.fillText(`スコア: ${records.shorts.best_score} (${records.shorts.best_rank})`, 250, 340);
-    ctx.fillText(`WPM: ${records.shorts.best_wpm}`, 250, 370);
-    ctx.fillText(`最高WPM: ${records.shorts.best_max_wpm}`, 250, 400);
-    ctx.fillText(`RKPM: ${records.shorts.best_rkpm}`, 250, 430);
+    // ===== 短文 =====
+    ctx.fillText("【短文】", 250, 320);
+    ctx.fillText(`スコア: ${records.shorts.best_score} (${records.shorts.best_rank})`, 250, 350);
+    ctx.fillText(`WPM: ${records.shorts.best_wpm}`, 250, 380);
+    ctx.fillText(`最高WPM: ${records.shorts.best_max_wpm}`, 250, 410);
+    ctx.fillText(`RKPM: ${records.shorts.best_rkpm}`, 250, 440);
 
-    // 長文
-    ctx.fillText(`【長文】`, 250, 470);
-    ctx.fillText(`スコア: ${records.longs.best_score} (${records.longs.best_rank})`, 250, 500);
-    ctx.fillText(`WPM: ${records.longs.best_wpm}`, 250, 530);
-    ctx.fillText(`最高WPM: ${records.longs.best_max_wpm}`, 250, 560);
-    ctx.fillText(`RKPM: ${records.longs.best_rkpm}`, 250, 590);
+    // ===== 長文 =====
+    ctx.fillText("【長文】", 250, 490);
+    ctx.fillText(`スコア: ${records.longs.best_score} (${records.longs.best_rank})`, 250, 520);
+    ctx.fillText(`WPM: ${records.longs.best_wpm}`, 250, 550);
+    ctx.fillText(`最高WPM: ${records.longs.best_max_wpm}`, 250, 580);
+    ctx.fillText(`RKPM: ${records.longs.best_rkpm}`, 250, 610);
 
-    ctx.fillText("Enterで戻る", 250, 640);
+    // 戻る
+    ctx.fillText("Enterで戻る", 250, 660);
 }
+
 
 
     requestAnimationFrame(loop);
