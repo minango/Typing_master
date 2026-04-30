@@ -711,9 +711,9 @@ function drawGame(theme, elapsed) {
     ctx.fillText(`ミス: ${missCount}`, 10, 40);
 
     if (!showing) {
-        drawTextMultiline(currentText, 40, rgb(theme.text), 100, 120, 700);
-        drawRomaWithColor(currentRoma, typed.length, 40, 100, 260, 700,
-            rgb(theme.typed), rgb(theme.subtext));
+        drawTextMultiline(currentText, 40, rgb(theme.text), 100, 100, 700);
+drawRomaWithColor(currentRoma, typed.length, 40, 100, 300, 700,
+    rgb(theme.typed), rgb(theme.subtext));
     } else {
         ctx.fillStyle = rgb(theme.text);
         ctx.font = '40px "Hiragino Sans"';
