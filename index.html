@@ -678,50 +678,51 @@ function loop() {
     }
 
     // ▼▼▼ カウントダウン ▼▼▼
-    else if (state === "countdown") {
-        const cd = now - countdownStart;
-        let text;
-        if (cd < 1) text = "3";
-        else if (cd < 2) text = "2";
-        else if (cd < 3) text = "1";
-        else if (cd < 4) text = "START";
-        else {
-            newProblem();
-            startTime = performance.now()/1000;
-            state = "game";
-            requestAnimationFrame(loop);
-            return;
-        }
-
-        ctx.fillStyle = rgb(theme.text);
-        ctx.font = '70px "Hiragino Sans"';
-        const w = ctx.measureText(text).width;
-        ctx.fillText(text, (WIDTH-w)/2, (HEIGHT-70)/2);
+else if (state === "countdown") {
+    const cd = now - countdownStart;
+    let text;
+    if (cd < 1) text = "3";
+    else if (cd < 2) text = "2";
+    else if (cd < 3) text = "1";
+    else if (cd < 4) text = "START";
+    else {
+        newProblem();
+        startTime = performance.now()/1000;
+        state = "game";
+        requestAnimationFrame(loop);
+        return;
     }
 
-    // ▼▼▼ ゲーム中 ▼▼▼
-    else if (state === "game") {
-        const remain = Math.max(0, Math.floor(gameTime - elapsed));
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    const w = ctx.measureText(text).width;
+    ctx.fillText(text, (WIDTH-w)/2, (HEIGHT-70)/2);
+}
+
+// ▼▼▼ ゲーム中 ▼▼▼
+else if (state === "game") {
+    const remain = Math.max(0, Math.floor(gameTime - elapsed));
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText(`残り: ${remain}s`, 10, 10);
+
+    ctx.fillStyle = rgb(theme.miss);
+    ctx.fillText(`ミス: ${missCount}`, 10, 40);
+
+    if (!showing) {
+        drawTextMultiline(currentText, 40, rgb(theme.text), 100, 120, 700);
+        drawRomaWithColor(currentRoma, typed.length, 40, 100, 260, 700,
+            rgb(theme.typed), rgb(theme.subtext));
+    } else {
         ctx.fillStyle = rgb(theme.text);
-        ctx.font = '30px "Hiragino Sans"';
-        ctx.fillText(`残り: ${remain}s`, 10, 10);
-
-        ctx.fillStyle = rgb(theme.miss);
-        ctx.fillText(`ミス: ${missCount}`, 10, 40);
-
-        if (!showing) {
-            drawTextMultiline(currentText, 40, rgb(theme.text), 100, 120, 700);
-            drawRomaWithColor(currentRoma, typed.length, 40, 100, 260, 700,
-                rgb(theme.typed), rgb(theme.subtext));
-        } else {
-            ctx.fillStyle = rgb(theme.text);
-            ctx.font = '40px "Hiragino Sans"';
-            ctx.fillText(`${showWpm} WPM`, 330, 180);
-            ctx.fillText(`${showLatency}s`, 330, 230);
-        }
+        ctx.font = '40px "Hiragino Sans"';
+        ctx.fillText(`${showWpm} WPM`, 330, 180);
+        ctx.fillText(`${showLatency}s`, 330, 230);
     }
+}
 
-    function drawResultScreen() {
+// ▼▼▼ 結果画面描画関数（★ここが追加部分） ▼▼▼
+function drawResultScreen() {
     const theme = themes[currentTheme];
 
     ctx.fillStyle = rgb(theme.text);
@@ -749,22 +750,21 @@ function loop() {
     ctx.fillText("Enterでタイトルへ", 300, 530);
 }
 
-        
-    else if (state === "result") {
-        drawResultScreen();
-    }
+// ▼▼▼ 結果画面 ▼▼▼
+else if (state === "result") {
+    drawResultScreen();
+}
 
-    else if (state === "highscore") {
+// ▼▼▼ ハイスコア ▼▼▼
+else if (state === "highscore") {
 
     if (typeof highscoreMode === "undefined") highscoreMode = "words";
 
     ctx.fillStyle = rgb(theme.text);
 
-    // タイトル
     ctx.font = '70px "Hiragino Sans"';
     ctx.fillText("High Scores", 250, 60);
 
-    // モード名
     ctx.font = '40px "Hiragino Sans"';
     const modeName =
         highscoreMode === "words" ? "単語" :
@@ -772,7 +772,6 @@ function loop() {
         "長文";
     ctx.fillText(`【${modeName}】`, 250, 140);
 
-    // データ
     const rec = records[highscoreMode];
 
     ctx.font = '32px "Hiragino Sans"';
@@ -780,20 +779,14 @@ function loop() {
     ctx.fillText(`WPM: ${rec.best_wpm}`, 250, 240);
     ctx.fillText(`最高WPM: ${rec.best_max_wpm}`, 250, 280);
     ctx.fillText(`RKPM: ${rec.best_rkpm}`, 250, 320);
-
-    // ★ 追加：正答率
     ctx.fillText(`正答率: ${rec.best_accuracy}%`, 250, 360);
-
-    // ★ 追加：ミス数
     ctx.fillText(`ミス数: ${rec.best_miss}`, 250, 400);
 
-    // 操作説明
     ctx.font = '28px "Hiragino Sans"';
     ctx.fillText("← → でモード切替 / Enterで戻る", 250, 460);
 }
 
-    requestAnimationFrame(loop);
-}
+requestAnimationFrame(loop);
 
 document.addEventListener("keydown", (e) => {
     if (state === "highscore") {
