@@ -589,7 +589,6 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ================== メインループ ==================
-
 function loop() {
     const theme = themes[currentTheme];
     ctx.fillStyle = rgb(theme.bg);
@@ -615,6 +614,7 @@ function loop() {
 
     ctx.textBaseline = "top";
 
+    // ▼▼▼ タイトル ▼▼▼
     if (state === "title") {
         ctx.fillStyle = rgb(theme.text);
         ctx.font = '70px "Hiragino Sans"';
@@ -641,6 +641,7 @@ function loop() {
         }
     }
 
+    // ▼▼▼ カウントダウン ▼▼▼
     else if (state === "countdown") {
         const cd = now - countdownStart;
         let text;
@@ -662,6 +663,7 @@ function loop() {
         ctx.fillText(text, (WIDTH-w)/2, (HEIGHT-70)/2);
     }
 
+    // ▼▼▼ ゲーム中 ▼▼▼
     else if (state === "game") {
         const remain = Math.max(0, Math.floor(gameTime - elapsed));
         ctx.fillStyle = rgb(theme.text);
@@ -682,15 +684,46 @@ function loop() {
             ctx.fillText(`${showLatency}s`, 330, 230);
         }
     }
+        
+    else if (state === "result") {
+        drawResultScreen();
+    }
 
+    else if (state === "highscore") {
+        
+        if (typeof highscoreMode === "undefined") highscoreMode = "words";
 
-// ループの外に置く部分（変数＋キー入力）
-// ▼▼▼ ループの外に置く部分（変数＋キー入力） ▼▼▼
+        ctx.fillStyle = rgb(theme.text);
 
-let highscoreMode = "words";
+        ctx.font = '70px "Hiragino Sans"';
+        ctx.fillText("High Scores", 250, 80);
+
+        ctx.font = '40px "Hiragino Sans"';
+        const modeName =
+            highscoreMode === "words" ? "単語" :
+            highscoreMode === "shorts" ? "短文" :
+            "長文";
+        ctx.fillText(`【${modeName}】`, 250, 150);
+
+        const rec = records[highscoreMode];
+
+        ctx.font = '30px "Hiragino Sans"';
+        ctx.fillText(`スコア: ${rec.best_score} (${rec.best_rank})`, 250, 200);
+        ctx.fillText(`WPM: ${rec.best_wpm}`, 250, 240);
+        ctx.fillText(`最高WPM: ${rec.best_max_wpm}`, 250, 280);
+        ctx.fillText(`RKPM: ${rec.best_rkpm}`, 250, 320);
+
+        ctx.fillText("← → でモード切替 / Enterで戻る", 250, 380);
+    }
+
+    requestAnimationFrame(loop);
+}
 
 document.addEventListener("keydown", (e) => {
     if (state === "highscore") {
+
+        if (typeof highscoreMode === "undefined") highscoreMode = "words";
+
         if (e.key === "ArrowRight") {
             if (highscoreMode === "words") highscoreMode = "shorts";
             else if (highscoreMode === "shorts") highscoreMode = "longs";
@@ -708,40 +741,6 @@ document.addEventListener("keydown", (e) => {
         }
     }
 });
-
-
-// ▼▼▼ ループの中の state 分岐に置く部分（描画） ▼▼▼
-
-else if (state === "highscore") {
-    ctx.fillStyle = rgb(theme.text);
-
-    // タイトル
-    ctx.font = '70px "Hiragino Sans"';
-    ctx.fillText("High Scores", 250, 80);
-
-    // モード名
-    ctx.font = '40px "Hiragino Sans"';
-    const modeName =
-        highscoreMode === "words" ? "単語" :
-        highscoreMode === "shorts" ? "短文" :
-        "長文";
-    ctx.fillText(`【${modeName}】`, 250, 150);
-
-    // データ
-    const rec = records[highscoreMode];
-
-    ctx.font = '30px "Hiragino Sans"';
-    ctx.fillText(`スコア: ${rec.best_score} (${rec.best_rank})`, 250, 200);
-    ctx.fillText(`WPM: ${rec.best_wpm}`, 250, 240);
-    ctx.fillText(`最高WPM: ${rec.best_max_wpm}`, 250, 280);
-    ctx.fillText(`RKPM: ${rec.best_rkpm}`, 250, 320);
-
-    // 操作説明
-    ctx.fillText("← → でモード切替 / Enterで戻る", 250, 380);
-}
-
-
-
 
     requestAnimationFrame(loop);
 }
