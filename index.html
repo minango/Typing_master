@@ -685,6 +685,8 @@ function loop() {
 
 
 // ループの外に置く部分（変数＋キー入力）
+// ▼▼▼ ループの外に置く部分（変数＋キー入力） ▼▼▼
+
 let highscoreMode = "words";
 
 document.addEventListener("keydown", (e) => {
@@ -707,7 +709,9 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// ループの中に置く部分（描画）
+
+// ▼▼▼ ループの中の state 分岐に置く部分（描画） ▼▼▼
+
 else if (state === "highscore") {
     ctx.fillStyle = rgb(theme.text);
 
@@ -735,6 +739,7 @@ else if (state === "highscore") {
     // 操作説明
     ctx.fillText("← → でモード切替 / Enterで戻る", 250, 380);
 }
+
 
 
 
