@@ -651,33 +651,33 @@ function loop() {
     ctx.textBaseline = "top";
 
     // ▼▼▼ タイトル ▼▼▼
-    if (state === "title") {
+if (state === "title") {
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    ctx.fillText("TypeMaster", 240, 100);
+
+    ctx.fillStyle = rgb(theme.button_bg);
+    ctx.fillRect(settingsButton.x, settingsButton.y, settingsButton.w, settingsButton.h);
+    ctx.fillStyle = rgb(theme.button_text);
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText("C", settingsButton.x+5, settingsButton.y+5);
+
+    ctx.fillStyle = rgb(theme.button_bg);
+    ctx.fillRect(highscoreButton.x, highscoreButton.y, highscoreButton.w, highscoreButton.h);
+    ctx.fillStyle = rgb(theme.button_text);
+    ctx.fillText("H", highscoreButton.x+15, highscoreButton.y+5);
+
+    for (const name in buttons) {
+        const b = buttons[name];
+        ctx.fillStyle = "rgb(70,70,70)";
+        ctx.fillRect(b.x, b.y, b.w, b.h);
         ctx.fillStyle = rgb(theme.text);
-        ctx.font = '70px "Hiragino Sans"';
-        ctx.fillText("TypeMaster", 240, 100);
-
-        ctx.fillStyle = rgb(theme.button_bg);
-        ctx.fillRect(settingsButton.x, settingsButton.y, settingsButton.w, settingsButton.h);
-        ctx.fillStyle = rgb(theme.button_text);
-        ctx.font = '30px "Hiragino Sans"';
-        ctx.fillText("C", settingsButton.x+5, settingsButton.y+5);
-
-        ctx.fillStyle = rgb(theme.button_bg);
-        ctx.fillRect(highscoreButton.x, highscoreButton.y, highscoreButton.w, highscoreButton.h);
-        ctx.fillStyle = rgb(theme.button_text);
-        ctx.fillText("H", highscoreButton.x+15, highscoreButton.y+5);
-
-        for (const name in buttons) {
-            const b = buttons[name];
-            ctx.fillStyle = "rgb(70,70,70)";
-            ctx.fillRect(b.x, b.y, b.w, b.h);
-            ctx.fillStyle = rgb(theme.text);
-            ctx.font = '40px "Hiragino Sans"';
-            ctx.fillText(name, b.x+100, b.y+10);
-        }
+        ctx.font = '40px "Hiragino Sans"';
+        ctx.fillText(name, b.x+100, b.y+10);
     }
+}
 
-    // ▼▼▼ カウントダウン ▼▼▼
+// ▼▼▼ カウントダウン ▼▼▼
 else if (state === "countdown") {
     const cd = now - countdownStart;
     let text;
@@ -721,35 +721,6 @@ else if (state === "game") {
     }
 }
 
-// ▼▼▼ 結果画面描画関数（★ここが追加部分） ▼▼▼
-function drawResultScreen() {
-    const theme = themes[currentTheme];
-
-    ctx.fillStyle = rgb(theme.text);
-    ctx.font = '70px "Hiragino Sans"';
-    ctx.fillText("RESULT", 300, 80);
-
-    const accuracy = totalInputs > 0
-        ? Math.floor(((totalInputs - missCount) / totalInputs) * 100)
-        : 0;
-
-    const score = Math.floor(showWpm * (accuracy / 100));
-    const rank = getRank(score);
-
-    ctx.font = '40px "Hiragino Sans"';
-    ctx.fillText(`スコア: ${score}`, 300, 180);
-    ctx.fillText(`ランク: ${rank}`, 300, 230);
-    ctx.fillText(`WPM: ${showWpm}`, 300, 280);
-    ctx.fillText(`最高WPM: ${maxWpm}`, 300, 330);
-    ctx.fillText(`RKPM: ${rkpm}`, 300, 380);
-    ctx.fillText(`正答率: ${accuracy}%`, 300, 430);
-    ctx.fillText(`ミス: ${missCount}`, 300, 480);
-
-    ctx.fillStyle = rgb(theme.subtext);
-    ctx.font = '30px "Hiragino Sans"';
-    ctx.fillText("Enterでタイトルへ", 300, 530);
-}
-
 // ▼▼▼ 結果画面 ▼▼▼
 else if (state === "result") {
     drawResultScreen();
@@ -788,33 +759,3 @@ else if (state === "highscore") {
 
 requestAnimationFrame(loop);
 
-document.addEventListener("keydown", (e) => {
-    if (state === "highscore") {
-
-        if (typeof highscoreMode === "undefined") highscoreMode = "words";
-
-        if (e.key === "ArrowRight") {
-            if (highscoreMode === "words") highscoreMode = "shorts";
-            else if (highscoreMode === "shorts") highscoreMode = "longs";
-            else highscoreMode = "words";
-        }
-
-        if (e.key === "ArrowLeft") {
-            if (highscoreMode === "words") highscoreMode = "longs";
-            else if (highscoreMode === "longs") highscoreMode = "shorts";
-            else highscoreMode = "words";
-        }
-
-        if (e.key === "Enter") {
-            state = "title";
-        }
-    }
-});
-
-    requestAnimationFrame(loop);
-
-requestAnimationFrame(loop);
-
-</script>
-</body>
-</html>
