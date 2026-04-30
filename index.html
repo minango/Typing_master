@@ -106,7 +106,8 @@ const longs_hira = [
 "けいけんをかさねることでけつだんするちからはどんどんみがかれていく",
 "しやをひろげることであたらしいかのうせいがみえてくる"
 ];
-// ================== ローマ字パターン（Python版完全移植） ==================
+
+// ================== ローマ字パターン ==================
 
 function getPatterns(ch, nextCh=null) {
     const base = {
@@ -142,6 +143,7 @@ function getPatterns(ch, nextCh=null) {
     return base[ch] || [ch];
 }
 
+// 小さいゃゅょ適用（変態ローマ字 + 標準 gyo/myo/rya など）
 function applySmall(candidates, small) {
     const table = {
         "ゃ": ["xya","lya","ya"],
@@ -149,10 +151,10 @@ function applySmall(candidates, small) {
         "ょ": ["xyo","lyo","yo"],
     };
 
-    const normal = {
-        "ゃ": "ya",
-        "ゅ": "yu",
-        "ょ": "yo",
+    const normalVowel = {
+        "ゃ": "a",
+        "ゅ": "u",
+        "ょ": "o",
     };
 
     const newList = [];
@@ -161,11 +163,23 @@ function applySmall(candidates, small) {
         while (base && "aiueo".includes(base[base.length-1])) {
             base = base.slice(0, -1);
         }
-        const lastVowel = c.slice(base.length);
+        const lastVowel = c.slice(base.length); // 例: "gi" の "i"
+
+        // 既存の変態ローマ字パターン
         for (const p of table[small]) {
             newList.push(base + lastVowel + p);
         }
-        newList.push(base + lastVowel + normal[small]);
+
+        // 標準 gyo / myo / byo / ryo / rya / ryu / ryo など
+        if (lastVowel === "i") {
+            const cons = base; // "g" "m" "r" など
+            const v = normalVowel[small]; // a/u/o
+            newList.push(cons + "y" + v); // gya, gyu, gyo など
+        } else {
+            // fallback: もとの母音 + ya/yu/yo
+            const v = normalVowel[small];
+            newList.push(base + "y" + v);
+        }
     }
     return newList;
 }
@@ -242,6 +256,8 @@ let problemStartInputs = 0;
 let resultSaved = false;
 let problemReady = false;
 
+let countdownStart = 0;
+
 const prefixMapCache = {};
 
 const buttons = {
@@ -253,9 +269,12 @@ const buttons = {
 const settingsButton = {x:820,y:440,w:60,h:40};
 const highscoreButton = {x:740,y:440,w:60,h:40};
 
-// ================== newProblem（完全オフライン版） ==================
+// ハイスコア画面でどのモードを表示するか
+let highscoreViewMode = "words";
 
-async function newProblem() {
+// ================== newProblem ==================
+
+function newProblem() {
     problemReady = false;
 
     let newText;
@@ -320,6 +339,7 @@ async function newProblem() {
 
     problemReady = true;
 }
+
 // ================== 描画ユーティリティ ==================
 
 const canvas = document.getElementById("game");
@@ -490,6 +510,7 @@ canvas.addEventListener("mousedown", (e) => {
     const my = e.clientY - rect.top;
 
     if (state === "title") {
+        // テーマ切り替え
         if (mx >= settingsButton.x && mx <= settingsButton.x+settingsButton.w &&
             my >= settingsButton.y && my <= settingsButton.y+settingsButton.h) {
             const keys = Object.keys(themes);
@@ -498,12 +519,15 @@ canvas.addEventListener("mousedown", (e) => {
             return;
         }
 
+        // ハイスコア画面へ
         if (mx >= highscoreButton.x && mx <= highscoreButton.x+highscoreButton.w &&
             my >= highscoreButton.y && my <= highscoreButton.y+highscoreButton.h) {
             state = "highscore";
+            highscoreViewMode = "words";
             return;
         }
 
+        // モード選択
         for (const name in buttons) {
             const b = buttons[name];
             if (mx >= b.x && mx <= b.x+b.w && my >= b.y && my <= b.y+b.h) {
@@ -529,6 +553,15 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
+    // ハイスコア画面でのモード切り替え
+    if (state === "highscore") {
+        if (e.key === "1") highscoreViewMode = "words";
+        if (e.key === "2") highscoreViewMode = "shorts";
+        if (e.key === "3") highscoreViewMode = "longs";
+        if (e.key === "Enter") state = "title";
+        return;
+    }
+
     if (state === "game") {
         if (e.key.length === 1) {
             const char = e.key.toLowerCase();
@@ -579,14 +612,199 @@ document.addEventListener("keydown", (e) => {
         }
     }
 
-    if (state === "highscore" && e.key === "Enter") state = "title";
-
     if (state === "result") {
         if (performance.now()/1000 - resultEnterTime > 0.3) {
             if (e.key === "Enter") state = "title";
         }
     }
+
+    if (state === "title") {
+        if (e.key === "1") {
+            currentList = words_hira; currentMode="words";
+            missCount = 0; totalInputs = 0; startTime = performance.now()/1000;
+            pauseTotal = 0; maxWpm = 0; latencyList = []; rkpm = 0; resultSaved = false;
+            state = "countdown"; countdownStart = performance.now()/1000;
+        }
+        if (e.key === "2") {
+            currentList = shorts_hira; currentMode="shorts";
+            missCount = 0; totalInputs = 0; startTime = performance.now()/1000;
+            pauseTotal = 0; maxWpm = 0; latencyList = []; rkpm = 0; resultSaved = false;
+            state = "countdown"; countdownStart = performance.now()/1000;
+        }
+        if (e.key === "3") {
+            currentList = longs_hira; currentMode="longs";
+            missCount = 0; totalInputs = 0; startTime = performance.now()/1000;
+            pauseTotal = 0; maxWpm = 0; latencyList = []; rkpm = 0; resultSaved = false;
+            state = "countdown"; countdownStart = performance.now()/1000;
+        }
+    }
 });
+
+// ================== 描画：タイトル ==================
+
+function drawTitle(theme) {
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    ctx.fillText("TypeMaster", 240, 100);
+
+    // テーマボタン
+    ctx.fillStyle = rgb(theme.button_bg);
+    ctx.fillRect(settingsButton.x, settingsButton.y, settingsButton.w, settingsButton.h);
+    ctx.fillStyle = rgb(theme.button_text);
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText("C", settingsButton.x+5, settingsButton.y+5);
+
+    // ハイスコアボタン
+    ctx.fillStyle = rgb(theme.button_bg);
+    ctx.fillRect(highscoreButton.x, highscoreButton.y, highscoreButton.w, highscoreButton.h);
+    ctx.fillStyle = rgb(theme.button_text);
+    ctx.fillText("H", highscoreButton.x+15, highscoreButton.y+5);
+
+    // モードボタン
+    for (const name in buttons) {
+        const b = buttons[name];
+        ctx.fillStyle = "rgb(70,70,70)";
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.fillStyle = rgb(theme.text);
+        ctx.font = '40px "Hiragino Sans"';
+        ctx.fillText(name, b.x+100, b.y+10);
+    }
+}
+
+// ================== 描画：カウントダウン ==================
+
+function drawCountdown(theme, now) {
+    const cd = now - countdownStart;
+    let text;
+    if (cd < 1) text = "3";
+    else if (cd < 2) text = "2";
+    else if (cd < 3) text = "1";
+    else if (cd < 4) text = "START";
+    else {
+        newProblem();
+        startTime = performance.now()/1000;
+        state = "game";
+        return;
+    }
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    const w = ctx.measureText(text).width;
+    ctx.fillText(text, (WIDTH-w)/2, (HEIGHT-70)/2);
+}
+
+// ================== 描画：ゲーム ==================
+
+function drawGame(theme, elapsed) {
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    const remain = Math.max(0, Math.floor(gameTime - elapsed));
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText(`残り: ${remain}s`, 10, 10);
+
+    ctx.fillStyle = rgb(theme.miss);
+    ctx.fillText(`ミス: ${missCount}`, 10, 40);
+
+    if (!showing) {
+        drawTextMultiline(currentText, 40, rgb(theme.text), 100, 120, 700);
+        drawRomaWithColor(currentRoma, typed.length, 40, 100, 260, 700,
+            rgb(theme.typed), rgb(theme.subtext));
+    } else {
+        ctx.fillStyle = rgb(theme.text);
+        ctx.font = '40px "Hiragino Sans"';
+        ctx.fillText(`${showWpm} WPM`, 330, 180);
+        ctx.fillText(`${showLatency}s`, 330, 230);
+    }
+}
+
+// ================== 描画：リザルト ==================
+
+function drawResult(theme) {
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    const wpm = Math.floor((totalInputs/gameTime)*60);
+    const acc = totalInputs ? Math.floor(((totalInputs-missCount)/totalInputs)*100) : 0;
+    const avgLatency = latencyList.length ? (latencyList.reduce((a,b)=>a+b,0)/latencyList.length) : 0;
+
+    const effectiveInputs = Math.max(totalInputs - 15, 1);
+    let effectiveTime = gameTime - 15*avgLatency;
+    if (effectiveTime < 1) effectiveTime = 1;
+
+    rkpm = Math.floor((effectiveInputs/effectiveTime)*60);
+    const score = Math.floor(Math.pow(wpm,1.2)*(acc/100));
+
+    const rank = getRank(score);
+    const rec = records[currentMode];
+
+    if (!resultSaved) {
+        if (score > rec.best_score) { rec.best_score = score; rec.best_rank = rank; }
+        if (wpm > rec.best_wpm) rec.best_wpm = wpm;
+        if (maxWpm > rec.best_max_wpm) rec.best_max_wpm = maxWpm;
+        if (rkpm > rec.best_rkpm) rec.best_rkpm = rkpm;
+        saveRecords(records);
+        resultSaved = true;
+    }
+
+    const colorArr = rankColors[rank];
+    ctx.fillStyle = rgb(colorArr);
+    ctx.font = '40px "Hiragino Sans"';
+    ctx.fillText(`ランク: ${rank}`, 300, 120);
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.fillText(`スコア: ${score}`, 300, 160);
+    ctx.fillText(`WPM: ${wpm}`, 300, 210);
+    ctx.fillText(`正確性: ${acc}%`, 300, 260);
+
+    ctx.fillStyle = rgb(theme.miss);
+    ctx.fillText(`ミス数: ${missCount}`, 300, 310);
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.fillText(`最高WPM: ${maxWpm}`, 300, 360);
+    ctx.fillText(`RKPM: ${rkpm}`, 300, 410);
+
+    ctx.font = '24px "Hiragino Sans"';
+    ctx.fillText("Enterでタイトルに戻る", 300, 450);
+}
+
+// ================== 描画：ハイスコア ==================
+
+function drawHighscore(theme) {
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    ctx.fillText("High Scores", 250, 80);
+
+    ctx.font = '24px "Hiragino Sans"';
+    ctx.fillStyle = rgb(theme.subtext);
+    ctx.fillText("1: 単語 / 2: 短文 / 3: 長文 で表示切り替え", 250, 140);
+    ctx.fillText("Enterでタイトルに戻る", 250, 170);
+
+    let label = "";
+    if (highscoreViewMode === "words") label = "単語モード";
+    if (highscoreViewMode === "shorts") label = "短文モード";
+    if (highscoreViewMode === "longs") label = "長文モード";
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.fillText(`表示中: ${label}`, 250, 210);
+
+    const rec = records[highscoreViewMode];
+
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText(`最高スコア: ${rec.best_score} (${rec.best_rank})`, 250, 260);
+    ctx.fillText(`最高WPM: ${rec.best_wpm}`, 250, 300);
+    ctx.fillText(`最高最高WPM: ${rec.best_max_wpm}`, 250, 340);
+    ctx.fillText(`最高RKPM: ${rec.best_rkpm}`, 250, 380);
+}
 
 // ================== メインループ ==================
 
@@ -613,144 +831,22 @@ function loop() {
         resultSaved = false;
     }
 
-    ctx.textBaseline = "top";
-
     if (state === "title") {
-        ctx.fillStyle = rgb(theme.text);
-        ctx.font = '70px "Hiragino Sans"';
-        ctx.fillText("TypeMaster", 240, 100);
-
-        ctx.fillStyle = rgb(theme.button_bg);
-        ctx.fillRect(settingsButton.x, settingsButton.y, settingsButton.w, settingsButton.h);
-        ctx.fillStyle = rgb(theme.button_text);
-        ctx.font = '30px "Hiragino Sans"';
-        ctx.fillText("C", settingsButton.x+5, settingsButton.y+5);
-
-        ctx.fillStyle = rgb(theme.button_bg);
-        ctx.fillRect(highscoreButton.x, highscoreButton.y, highscoreButton.w, highscoreButton.h);
-        ctx.fillStyle = rgb(theme.button_text);
-        ctx.fillText("H", highscoreButton.x+15, highscoreButton.y+5);
-
-        for (const name in buttons) {
-            const b = buttons[name];
-            ctx.fillStyle = "rgb(70,70,70)";
-            ctx.fillRect(b.x, b.y, b.w, b.h);
-            ctx.fillStyle = rgb(theme.text);
-            ctx.font = '40px "Hiragino Sans"';
-            ctx.fillText(name, b.x+100, b.y+10);
-        }
-    }
-
-    else if (state === "countdown") {
-        const cd = now - countdownStart;
-        let text;
-        if (cd < 1) text = "3";
-        else if (cd < 2) text = "2";
-        else if (cd < 3) text = "1";
-        else if (cd < 4) text = "START";
-        else {
-            newProblem();
-            startTime = performance.now()/1000;
-            state = "game";
-            requestAnimationFrame(loop);
-            return;
-        }
-
-        ctx.fillStyle = rgb(theme.text);
-        ctx.font = '70px "Hiragino Sans"';
-        const w = ctx.measureText(text).width;
-        ctx.fillText(text, (WIDTH-w)/2, (HEIGHT-70)/2);
-    }
-
-    else if (state === "game") {
-        const remain = Math.max(0, Math.floor(gameTime - elapsed));
-        ctx.fillStyle = rgb(theme.text);
-        ctx.font = '30px "Hiragino Sans"';
-        ctx.fillText(`残り: ${remain}s`, 10, 10);
-
-        ctx.fillStyle = rgb(theme.miss);
-        ctx.fillText(`ミス: ${missCount}`, 10, 40);
-
-        if (!showing) {
-            drawTextMultiline(currentText, 40, rgb(theme.text), 100, 120, 700);
-            drawRomaWithColor(currentRoma, typed.length, 40, 100, 260, 700,
-                rgb(theme.typed), rgb(theme.subtext));
-        } else {
-            ctx.fillStyle = rgb(theme.text);
-            ctx.font = '40px "Hiragino Sans"';
-            ctx.fillText(`${showWpm} WPM`, 330, 180);
-            ctx.fillText(`${showLatency}s`, 330, 230);
-        }
-    }
-
-    else if (state === "result") {
-        const wpm = Math.floor((totalInputs/gameTime)*60);
-        const acc = totalInputs ? Math.floor(((totalInputs-missCount)/totalInputs)*100) : 0;
-        const avgLatency = latencyList.length ? (latencyList.reduce((a,b)=>a+b,0)/latencyList.length) : 0;
-
-        const effectiveInputs = Math.max(totalInputs - 15, 1);
-        let effectiveTime = gameTime - 15*avgLatency;
-        if (effectiveTime < 1) effectiveTime = 1;
-
-        rkpm = Math.floor((effectiveInputs/effectiveTime)*60);
-        const score = Math.floor(Math.pow(wpm,1.2)*(acc/100));
-
-        const rank = getRank(score);
-
-        const rec = records[currentMode];
-        if (score > rec.best_score) { rec.best_score = score; rec.best_rank = rank; }
-        if (wpm > rec.best_wpm) rec.best_wpm = wpm;
-        if (maxWpm > rec.best_max_wpm) rec.best_max_wpm = maxWpm;
-        if (rkpm > rec.best_rkpm) rec.best_rkpm = rkpm;
-
-        if (!resultSaved) { saveRecords(records); resultSaved = true; }
-
-        const colorArr = rankColors[rank];
-        ctx.fillStyle = rgb(colorArr);
-        ctx.font = '40px "Hiragino Sans"';
-        ctx.fillText(`ランク: ${rank}`, 300, 120);
-
-        ctx.fillStyle = rgb(theme.text);
-        ctx.fillText(`スコア: ${score}`, 300, 160);
-        ctx.fillText(`WPM: ${wpm}`, 300, 210);
-        ctx.fillText(`正確性: ${acc}%`, 300, 260);
-
-        ctx.fillStyle = rgb(theme.miss);
-        ctx.fillText(`ミス数: ${missCount}`, 300, 310);
-
-        ctx.fillStyle = rgb(theme.text);
-        ctx.fillText(`最高WPM: ${maxWpm}`, 300, 360);
-        ctx.fillText(`RKPM: ${rkpm}`, 300, 410);
-
-        ctx.font = '24px "Hiragino Sans"';
-        ctx.fillText("Enterでタイトルに戻る", 300, 450);
-    }
-
-    else if (state === "highscore") {
-    ctx.fillStyle = rgb(theme.text);
-    ctx.font = '70px "Hiragino Sans"';
-    ctx.fillText("High Scores", 250, 80);
-
-    ctx.font = '30px "Hiragino Sans"';
-    ctx.fillText(`単語: ${records.words.best_score} (${records.words.best_rank})`, 250, 180);
-    ctx.fillText(`短文: ${records.shorts.best_score} (${records.shorts.best_rank})`, 250, 220);
-    ctx.fillText(`長文: ${records.longs.best_score} (${records.longs.best_rank})`, 250, 260);
-}
-
-        ctx.font = '30px "Hiragino Sans"';
-        ctx.fillText(`最高スコア: ${rec.best_score} (${rec.best_rank})`, 250, 180);
-        ctx.fillText(`最高WPM: ${rec.best_wpm}`, 250, 220);
-        ctx.fillText(`最高最高WPM: ${rec.best_max_wpm}`, 250, 260);
-        ctx.fillText(`最高RKPM: ${rec.best_rkpm}`, 250, 300);
-
-        ctx.fillText("Enterで戻る", 250, 360);
+        drawTitle(theme);
+    } else if (state === "countdown") {
+        drawCountdown(theme, now);
+    } else if (state === "game") {
+        drawGame(theme, elapsed);
+    } else if (state === "result") {
+        drawResult(theme);
+    } else if (state === "highscore") {
+        drawHighscore(theme);
     }
 
     requestAnimationFrame(loop);
 }
 
 requestAnimationFrame(loop);
-
 </script>
 </body>
 </html>
