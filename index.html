@@ -801,21 +801,25 @@ function loop() {
 
         const rec = records[highscoreMode];
 
-        ctx.font = '32px "Hiragino Sans"';
-        ctx.fillText(`スコア: ${rec.best_score} (${rec.best_rank})`, 250, 200);
-        ctx.fillText(`WPM: ${rec.best_wpm}`, 250, 240);
-        ctx.fillText(`最高WPM: ${rec.best_max_wpm}`, 250, 280);
-        ctx.fillText(`RKPM: ${rec.best_rkpm}`, 250, 320);
-        ctx.fillText(`正答率: ${rec.best_accuracy}%`, 250, 360);
-        ctx.fillText(`ミス数: ${rec.best_miss}`, 250, 400);
+ctx.font = '32px "Hiragino Sans"';
+ctx.fillText(`スコア: ${rec.best_score} (${rec.best_rank})`, 250, 200);
+ctx.fillText(`WPM: ${rec.best_wpm}`, 250, 240);
+ctx.fillText(`最高WPM: ${rec.best_max_wpm}`, 250, 280);
+ctx.fillText(`RKPM: ${rec.best_rkpm}`, 250, 320);
+ctx.fillText(`正答率: ${rec.best_accuracy}%`, 250, 360);
+ctx.fillText(`ミス数: ${rec.best_miss}`, 250, 400);
 
-        ctx.font = '28px "Hiragino Sans"';
-        ctx.fillText("← → でモード切替 / Enterで戻る", 250, 460);
-    }
-
-    requestAnimationFrame(loop);
+ctx.font = '28px "Hiragino Sans"';
+ctx.fillText("← → でモード切替 / Enterで戻る", 250, 460);
 }
+
+// ★★★ ここで loop() を閉じる ★★★
+} 
+
+requestAnimationFrame(loop);
+
 </script>
 </body>
 </html>
+
 
