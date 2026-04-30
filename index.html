@@ -720,6 +720,35 @@ function loop() {
             ctx.fillText(`${showLatency}s`, 330, 230);
         }
     }
+
+    function drawResultScreen() {
+    const theme = themes[currentTheme];
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    ctx.fillText("RESULT", 300, 80);
+
+    const accuracy = totalInputs > 0
+        ? Math.floor(((totalInputs - missCount) / totalInputs) * 100)
+        : 0;
+
+    const score = Math.floor(showWpm * (accuracy / 100));
+    const rank = getRank(score);
+
+    ctx.font = '40px "Hiragino Sans"';
+    ctx.fillText(`スコア: ${score}`, 300, 180);
+    ctx.fillText(`ランク: ${rank}`, 300, 230);
+    ctx.fillText(`WPM: ${showWpm}`, 300, 280);
+    ctx.fillText(`最高WPM: ${maxWpm}`, 300, 330);
+    ctx.fillText(`RKPM: ${rkpm}`, 300, 380);
+    ctx.fillText(`正答率: ${accuracy}%`, 300, 430);
+    ctx.fillText(`ミス: ${missCount}`, 300, 480);
+
+    ctx.fillStyle = rgb(theme.subtext);
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText("Enterでタイトルへ", 300, 530);
+}
+
         
     else if (state === "result") {
         drawResultScreen();
