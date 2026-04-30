@@ -624,31 +624,7 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// ================== メインループ ==================
-function loop() {
-    const theme = themes[currentTheme];
-    ctx.fillStyle = rgb(theme.bg);
-    ctx.fillRect(0,0,WIDTH,HEIGHT);
-
-    const now = performance.now()/1000;
-
-    if (showing && now - showTime > 1.2) {
-        showing = false;
-        pauseTotal += now - pauseStart;
-        newProblem();
-    }
-
-    let elapsed;
-    if (showing) elapsed = showTime - startTime - pauseTotal;
-    else elapsed = now - startTime - pauseTotal;
-
-    if (state === "game" && elapsed >= gameTime) {
-        state = "result";
-        resultEnterTime = now;
-        resultSaved = false;
-    }
-
-    // ▼▼▼ 結果画面描画関数（loop の外） ▼▼▼
+// ▼▼▼ 結果画面描画関数（loop の外） ▼▼▼
 function drawResultScreen() {
     const theme = themes[currentTheme];
 
@@ -818,6 +794,7 @@ requestAnimationFrame(loop);
 </script>
 </body>
 </html>
+
 
 
 
