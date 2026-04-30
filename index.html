@@ -142,69 +142,33 @@ function getPatterns(ch, nextCh=null) {
     return base[ch] || [ch];
 }
 
-function applySmall(candidates, smallKana) {
-    // 小文字そのもの
+function applySmall(candidates, small) {
     const table = {
-        "ゃ": ["xya", "lya", "ya"],
-        "ゅ": ["xyu", "lyu", "yu"],
-        "ょ": ["xyo", "lyo", "yo"]
+        "ゃ": ["xya","lya","ya"],
+        "ゅ": ["xyu","lyu","yu"],
+        "ょ": ["xyo","lyo","yo"],
     };
 
-    // 標準拗音（kya / sha / cha / jo など）
-    const normalMap = {
-        "ゃ": {
-            "k": "kya", "g": "gya",
-            "s": "sha", "z": "ja", "j": "ja",
-            "t": "cha", "d": "ja",
-            "n": "nya",
-            "h": "hya", "b": "bya", "p": "pya",
-            "m": "mya", "r": "rya"
-        },
-        "ゅ": {
-            "k": "kyu", "g": "gyu",
-            "s": "shu", "z": "ju", "j": "ju",
-            "t": "chu", "d": "ju",
-            "n": "nyu",
-            "h": "hyu", "b": "byu", "p": "pyu",
-            "m": "myu", "r": "ryu"
-        },
-        "ょ": {
-            "k": "kyo", "g": "gyo",
-            "s": "sho", "z": "jo", "j": "jo",
-            "t": "cho", "d": "jo",
-            "n": "nyo",
-            "h": "hyo", "b": "byo", "p": "pyo",
-            "m": "myo", "r": "ryo"
-        }
+    const normal = {
+        "ゃ": "ya",
+        "ゅ": "yu",
+        "ょ": "yo",
     };
 
-    let result = [];
-
-    for (let c of candidates) {
-        // 子音部分（最後の母音を削る）
-        let base = c.replace(/[aiueo]+$/, "");
-        let lastVowel = c.slice(base.length);
-
-        // x系・l系・小文字
-        for (let p of table[smallKana]) {
-            result.push(base + lastVowel + p);
+    const newList = [];
+    for (const c of candidates) {
+        let base = c;
+        while (base && "aiueo".includes(base[base.length-1])) {
+            base = base.slice(0, -1);
         }
-
-        // 標準拗音（kya / sha / cha / jo）
-        if (base.length > 0) {
-            let head = base[0];
-            if (normalMap[smallKana][head]) {
-                result.push(normalMap[smallKana][head]);
-            }
+        const lastVowel = c.slice(base.length);
+        for (const p of table[small]) {
+            newList.push(base + lastVowel + p);
         }
-
-        // 変態ローマ字（shixya / jixyo / kixyu）
-        result.push(base + lastVowel + table[smallKana][0]); // xya / xyu / xyo
+        newList.push(base + lastVowel + normal[small]);
     }
-
-    return result;
+    return newList;
 }
-
 
 function buildCandidates(hira) {
     let candidates = [""];
@@ -565,7 +529,6 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-    // ▼▼▼ ゲーム中のキー入力 ▼▼▼
     if (state === "game") {
         if (e.key.length === 1) {
             const char = e.key.toLowerCase();
@@ -606,9 +569,7 @@ document.addEventListener("keydown", (e) => {
                     const latency = firstKeyTime - problemStartTime;
                     if (latency >= 0 && latency <= 3) latencyList.push(latency);
                     showLatency = Math.round(latency*100)/100;
-                } else {
-                    showLatency = 0;
-                }
+                } else showLatency = 0;
 
                 showWpm = wpm;
                 showTime = now;
@@ -618,28 +579,8 @@ document.addEventListener("keydown", (e) => {
         }
     }
 
-    // ▼▼▼ ハイスコア画面のキー入力 ▼▼▼
-    if (state === "highscore") {
-        // モード切替
-        if (e.key === "ArrowLeft") {
-            if (highscoreMode === "words") highscoreMode = "longs";
-            else if (highscoreMode === "shorts") highscoreMode = "words";
-            else if (highscoreMode === "longs") highscoreMode = "shorts";
-        }
-        if (e.key === "ArrowRight") {
-            if (highscoreMode === "words") highscoreMode = "shorts";
-            else if (highscoreMode === "shorts") highscoreMode = "longs";
-            else if (highscoreMode === "longs") highscoreMode = "words";
-        }
+    if (state === "highscore" && e.key === "Enter") state = "title";
 
-        // タイトルへ戻る
-        if (e.key === "Enter") {
-            state = "title";
-        }
-        return;
-    }
-
-    // ▼▼▼ リザルト画面のキー入力 ▼▼▼
     if (state === "result") {
         if (performance.now()/1000 - resultEnterTime > 0.3) {
             if (e.key === "Enter") state = "title";
@@ -647,95 +588,8 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// ▼▼▼ 結果画面 ▼▼▼
-else if (state === "result") {
-
-    const theme = themes[currentTheme];
-
-    // ===== 計算 =====
-    const wpm = Math.floor((totalInputs / gameTime) * 60);
-    const accuracy = totalInputs > 0
-        ? Math.floor(((totalInputs - missCount) / totalInputs) * 100)
-        : 0;
-
-    const avgLatency = latencyList.length > 0
-        ? latencyList.reduce((a,b)=>a+b,0) / latencyList.length
-        : 0;
-
-    const effectiveInputs = Math.max(totalInputs - 15, 1);
-    let effectiveTime = gameTime - 15 * avgLatency;
-    if (effectiveTime < 1) effectiveTime = 1;
-
-    const rkpm = Math.floor((effectiveInputs / effectiveTime) * 60);
-    const score = Math.floor((wpm ** 1.2) * (accuracy / 100));
-
-    // ===== ランク =====
-    const rankColors = {
-        "Mythic": [255,120,255],
-        "Transcendent": [180,140,255],
-        "Celestial": [140,180,255],
-        "Ethereal": [120,220,255],
-        "Masterful": [120,255,200],
-        "Supreme": [120,255,150],
-        "Radiant": [180,255,120],
-        "Prime": [230,255,120],
-        "Skilled": [255,230,120],
-        "Steady": [255,200,120],
-        "Refined": [255,170,120],
-        "Focused": [255,140,120],
-        "Growing": [255,120,120],
-        "Rising": [255,120,160],
-        "Learner": [255,120,200],
-        "Novice": [255,120,230],
-        "Beginner": [220,120,255],
-        "Starter": [180,120,255],
-    };
-
-    const rank = getRank(score);
-    const rankColor = rankColors[rank];
-
-    // ===== ハイスコア保存 =====
-    if (!resultSaved) {
-        let rec = records[currentMode];
-
-        if (score > rec.best_score) {
-            rec.best_score = score;
-            rec.best_rank = rank;
-        }
-        if (wpm > rec.best_wpm) rec.best_wpm = wpm;
-        if (maxWpm > rec.best_max_wpm) rec.best_max_wpm = maxWpm;
-        if (rkpm > rec.best_rkpm) rec.best_rkpm = rkpm;
-
-        saveRecords(records);
-        resultSaved = true;
-    }
-
-    // ===== 描画（Python版と完全一致）=====
-    ctx.font = '40px "Hiragino Sans"';
-
-    ctx.fillStyle = `rgb(${rankColor[0]},${rankColor[1]},${rankColor[2]})`;
-    ctx.fillText(`ランク: ${rank}`, 300, 120);
-
-    ctx.fillStyle = rgb(theme.text);
-    ctx.fillText(`スコア: ${score}`, 300, 160);
-    ctx.fillText(`WPM: ${wpm}`, 300, 200);
-    ctx.fillText(`正確性: ${accuracy}%`, 300, 240);
-
-    ctx.fillStyle = rgb(theme.miss);
-    ctx.fillText(`ミス数: ${missCount}`, 300, 280);
-
-    ctx.fillStyle = rgb(theme.text);
-    ctx.fillText(`最高WPM: ${maxWpm}`, 300, 320);
-    ctx.fillText(`RKPM: ${rkpm}`, 300, 360);
-
-    ctx.fillStyle = rgb(theme.subtext);
-    ctx.font = '30px "Hiragino Sans"';
-    ctx.fillText("Enterでタイトルへ", 300, 420);
-}
-
-
-
 // ================== メインループ ==================
+
 function loop() {
     const theme = themes[currentTheme];
     ctx.fillStyle = rgb(theme.bg);
@@ -761,7 +615,6 @@ function loop() {
 
     ctx.textBaseline = "top";
 
-    // ▼▼▼ タイトル ▼▼▼
     if (state === "title") {
         ctx.fillStyle = rgb(theme.text);
         ctx.font = '70px "Hiragino Sans"';
@@ -788,7 +641,6 @@ function loop() {
         }
     }
 
-    // ▼▼▼ カウントダウン ▼▼▼
     else if (state === "countdown") {
         const cd = now - countdownStart;
         let text;
@@ -810,7 +662,6 @@ function loop() {
         ctx.fillText(text, (WIDTH-w)/2, (HEIGHT-70)/2);
     }
 
-    // ▼▼▼ ゲーム中 ▼▼▼
     else if (state === "game") {
         const remain = Math.max(0, Math.floor(gameTime - elapsed));
         ctx.fillStyle = rgb(theme.text);
@@ -832,40 +683,67 @@ function loop() {
         }
     }
 
-    // ▼▼▼ 結果画面 ▼▼▼
     else if (state === "result") {
-        drawResultScreen();
-    }
+        const wpm = Math.floor((totalInputs/gameTime)*60);
+        const acc = totalInputs ? Math.floor(((totalInputs-missCount)/totalInputs)*100) : 0;
+        const avgLatency = latencyList.length ? (latencyList.reduce((a,b)=>a+b,0)/latencyList.length) : 0;
 
-    // ▼▼▼ ハイスコア ▼▼▼
-    else if (state === "highscore") {
+        const effectiveInputs = Math.max(totalInputs - 15, 1);
+        let effectiveTime = gameTime - 15*avgLatency;
+        if (effectiveTime < 1) effectiveTime = 1;
 
-        if (typeof highscoreMode === "undefined") highscoreMode = "words";
+        rkpm = Math.floor((effectiveInputs/effectiveTime)*60);
+        const score = Math.floor(Math.pow(wpm,1.2)*(acc/100));
+
+        const rank = getRank(score);
+
+        const rec = records[currentMode];
+        if (score > rec.best_score) { rec.best_score = score; rec.best_rank = rank; }
+        if (wpm > rec.best_wpm) rec.best_wpm = wpm;
+        if (maxWpm > rec.best_max_wpm) rec.best_max_wpm = maxWpm;
+        if (rkpm > rec.best_rkpm) rec.best_rkpm = rkpm;
+
+        if (!resultSaved) { saveRecords(records); resultSaved = true; }
+
+        const colorArr = rankColors[rank];
+        ctx.fillStyle = rgb(colorArr);
+        ctx.font = '40px "Hiragino Sans"';
+        ctx.fillText(`ランク: ${rank}`, 300, 120);
 
         ctx.fillStyle = rgb(theme.text);
+        ctx.fillText(`スコア: ${score}`, 300, 160);
+        ctx.fillText(`WPM: ${wpm}`, 300, 210);
+        ctx.fillText(`正確性: ${acc}%`, 300, 260);
 
-        ctx.font = '70px "Hiragino Sans"';
-        ctx.fillText("High Scores", 250, 60);
+        ctx.fillStyle = rgb(theme.miss);
+        ctx.fillText(`ミス数: ${missCount}`, 300, 310);
 
-        ctx.font = '40px "Hiragino Sans"';
-        const modeName =
-            highscoreMode === "words" ? "単語" :
-            highscoreMode === "shorts" ? "短文" :
-            "長文";
-        ctx.fillText(`【${modeName}】`, 250, 140);
+        ctx.fillStyle = rgb(theme.text);
+        ctx.fillText(`最高WPM: ${maxWpm}`, 300, 360);
+        ctx.fillText(`RKPM: ${rkpm}`, 300, 410);
 
-        const rec = records[highscoreMode];
+        ctx.font = '24px "Hiragino Sans"';
+        ctx.fillText("Enterでタイトルに戻る", 300, 450);
+    }
 
-        ctx.font = '32px "Hiragino Sans"';
-        ctx.fillText(`スコア: ${rec.best_score} (${rec.best_rank})`, 250, 200);
-        ctx.fillText(`WPM: ${rec.best_wpm}`, 250, 240);
-        ctx.fillText(`最高WPM: ${rec.best_max_wpm}`, 250, 280);
-        ctx.fillText(`RKPM: ${rec.best_rkpm}`, 250, 320);
-        ctx.fillText(`正答率: ${rec.best_accuracy}%`, 250, 360);
-        ctx.fillText(`ミス数: ${rec.best_miss}`, 250, 400);
+    else if (state === "highscore") {
+    ctx.fillStyle = rgb(theme.text);
+    ctx.font = '70px "Hiragino Sans"';
+    ctx.fillText("High Scores", 250, 80);
 
-        ctx.font = '28px "Hiragino Sans"';
-        ctx.fillText("← → でモード切替 / Enterで戻る", 250, 460);
+    ctx.font = '30px "Hiragino Sans"';
+    ctx.fillText(`単語: ${records.words.best_score} (${records.words.best_rank})`, 250, 180);
+    ctx.fillText(`短文: ${records.shorts.best_score} (${records.shorts.best_rank})`, 250, 220);
+    ctx.fillText(`長文: ${records.longs.best_score} (${records.longs.best_rank})`, 250, 260);
+}
+
+        ctx.font = '30px "Hiragino Sans"';
+        ctx.fillText(`最高スコア: ${rec.best_score} (${rec.best_rank})`, 250, 180);
+        ctx.fillText(`最高WPM: ${rec.best_wpm}`, 250, 220);
+        ctx.fillText(`最高最高WPM: ${rec.best_max_wpm}`, 250, 260);
+        ctx.fillText(`最高RKPM: ${rec.best_rkpm}`, 250, 300);
+
+        ctx.fillText("Enterで戻る", 250, 360);
     }
 
     requestAnimationFrame(loop);
@@ -876,10 +754,3 @@ requestAnimationFrame(loop);
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
