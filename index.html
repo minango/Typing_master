@@ -565,6 +565,7 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
+    // ▼▼▼ ゲーム中のキー入力 ▼▼▼
     if (state === "game") {
         if (e.key.length === 1) {
             const char = e.key.toLowerCase();
@@ -605,7 +606,9 @@ document.addEventListener("keydown", (e) => {
                     const latency = firstKeyTime - problemStartTime;
                     if (latency >= 0 && latency <= 3) latencyList.push(latency);
                     showLatency = Math.round(latency*100)/100;
-                } else showLatency = 0;
+                } else {
+                    showLatency = 0;
+                }
 
                 showWpm = wpm;
                 showTime = now;
@@ -615,8 +618,28 @@ document.addEventListener("keydown", (e) => {
         }
     }
 
-    if (state === "highscore" && e.key === "Enter") state = "title";
+    // ▼▼▼ ハイスコア画面のキー入力 ▼▼▼
+    if (state === "highscore") {
+        // モード切替
+        if (e.key === "ArrowLeft") {
+            if (highscoreMode === "words") highscoreMode = "longs";
+            else if (highscoreMode === "shorts") highscoreMode = "words";
+            else if (highscoreMode === "longs") highscoreMode = "shorts";
+        }
+        if (e.key === "ArrowRight") {
+            if (highscoreMode === "words") highscoreMode = "shorts";
+            else if (highscoreMode === "shorts") highscoreMode = "longs";
+            else if (highscoreMode === "longs") highscoreMode = "words";
+        }
 
+        // タイトルへ戻る
+        if (e.key === "Enter") {
+            state = "title";
+        }
+        return;
+    }
+
+    // ▼▼▼ リザルト画面のキー入力 ▼▼▼
     if (state === "result") {
         if (performance.now()/1000 - resultEnterTime > 0.3) {
             if (e.key === "Enter") state = "title";
@@ -639,6 +662,46 @@ function drawResultScreen() {
     const score = Math.floor(showWpm * (accuracy / 100));
     const rank = getRank(score);
 
+    // ▼▼▼ ハイスコア更新＆保存（1回だけ） ▼▼▼
+    if (!resultSaved) {
+        let rec = records[currentMode];
+        if (!rec) {
+            rec = records[currentMode] = {
+                best_score: 0,
+                best_rank: "Starter",
+                best_wpm: 0,
+                best_max_wpm: 0,
+                best_rkpm: 0,
+                best_accuracy: 0,
+                best_miss: 0
+            };
+        }
+
+        if (score > rec.best_score) {
+            rec.best_score = score;
+            rec.best_rank = rank;
+        }
+        if (showWpm > rec.best_wpm) {
+            rec.best_wpm = showWpm;
+        }
+        if (maxWpm > rec.best_max_wpm) {
+            rec.best_max_wpm = maxWpm;
+        }
+        if (rkpm > rec.best_rkpm) {
+            rec.best_rkpm = rkpm;
+        }
+        if (accuracy > rec.best_accuracy) {
+            rec.best_accuracy = accuracy;
+        }
+        if (rec.best_miss === 0 || missCount < rec.best_miss) {
+            rec.best_miss = missCount;
+        }
+
+        saveRecords(records);
+        resultSaved = true;
+    }
+    // ▲▲▲ ここまで保存処理 ▲▲▲
+
     ctx.font = '40px "Hiragino Sans"';
     ctx.fillText(`スコア: ${score}`, 300, 180);
     ctx.fillText(`ランク: ${rank}`, 300, 230);
@@ -652,6 +715,7 @@ function drawResultScreen() {
     ctx.font = '30px "Hiragino Sans"';
     ctx.fillText("Enterでタイトルへ", 300, 530);
 }
+
 
 // ================== メインループ ==================
 function loop() {
