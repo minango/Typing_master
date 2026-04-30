@@ -683,9 +683,9 @@ function loop() {
         }
     }
 
-    // ▼▼▼ ハイスコア画面：完全置き換え版 ▼▼▼
 
-let highscoreMode = "words"; // ← 追加してOK（ここに含めてある）
+// ループの外に置く部分（変数＋キー入力）
+let highscoreMode = "words";
 
 document.addEventListener("keydown", (e) => {
     if (state === "highscore") {
@@ -707,6 +707,7 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
+// ループの中に置く部分（描画）
 else if (state === "highscore") {
     ctx.fillStyle = rgb(theme.text);
 
@@ -734,10 +735,6 @@ else if (state === "highscore") {
     // 操作説明
     ctx.fillText("← → でモード切替 / Enterで戻る", 250, 380);
 }
-
-// ▲▲▲ ここまで丸ごと置き換え ▲▲▲
-
-
 
 
 
