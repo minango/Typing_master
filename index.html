@@ -647,74 +647,92 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// ▼▼▼ 結果画面描画関数（loop の外） ▼▼▼
-function drawResultScreen() {
+// ▼▼▼ 結果画面 ▼▼▼
+else if (state === "result") {
+
     const theme = themes[currentTheme];
 
-    ctx.fillStyle = rgb(theme.text);
-    ctx.font = '70px "Hiragino Sans"';
-    ctx.fillText("RESULT", 300, 80);
-
+    // ===== 計算 =====
+    const wpm = Math.floor((totalInputs / gameTime) * 60);
     const accuracy = totalInputs > 0
         ? Math.floor(((totalInputs - missCount) / totalInputs) * 100)
         : 0;
 
-    const score = Math.floor(showWpm * (accuracy / 100));
-    const rank = getRank(score);
+    const avgLatency = latencyList.length > 0
+        ? latencyList.reduce((a,b)=>a+b,0) / latencyList.length
+        : 0;
 
-    // ▼▼▼ ハイスコア更新＆保存（1回だけ） ▼▼▼
+    const effectiveInputs = Math.max(totalInputs - 15, 1);
+    let effectiveTime = gameTime - 15 * avgLatency;
+    if (effectiveTime < 1) effectiveTime = 1;
+
+    const rkpm = Math.floor((effectiveInputs / effectiveTime) * 60);
+    const score = Math.floor((wpm ** 1.2) * (accuracy / 100));
+
+    // ===== ランク =====
+    const rankColors = {
+        "Mythic": [255,120,255],
+        "Transcendent": [180,140,255],
+        "Celestial": [140,180,255],
+        "Ethereal": [120,220,255],
+        "Masterful": [120,255,200],
+        "Supreme": [120,255,150],
+        "Radiant": [180,255,120],
+        "Prime": [230,255,120],
+        "Skilled": [255,230,120],
+        "Steady": [255,200,120],
+        "Refined": [255,170,120],
+        "Focused": [255,140,120],
+        "Growing": [255,120,120],
+        "Rising": [255,120,160],
+        "Learner": [255,120,200],
+        "Novice": [255,120,230],
+        "Beginner": [220,120,255],
+        "Starter": [180,120,255],
+    };
+
+    const rank = getRank(score);
+    const rankColor = rankColors[rank];
+
+    // ===== ハイスコア保存 =====
     if (!resultSaved) {
         let rec = records[currentMode];
-        if (!rec) {
-            rec = records[currentMode] = {
-                best_score: 0,
-                best_rank: "Starter",
-                best_wpm: 0,
-                best_max_wpm: 0,
-                best_rkpm: 0,
-                best_accuracy: 0,
-                best_miss: 0
-            };
-        }
 
         if (score > rec.best_score) {
             rec.best_score = score;
             rec.best_rank = rank;
         }
-        if (showWpm > rec.best_wpm) {
-            rec.best_wpm = showWpm;
-        }
-        if (maxWpm > rec.best_max_wpm) {
-            rec.best_max_wpm = maxWpm;
-        }
-        if (rkpm > rec.best_rkpm) {
-            rec.best_rkpm = rkpm;
-        }
-        if (accuracy > rec.best_accuracy) {
-            rec.best_accuracy = accuracy;
-        }
-        if (rec.best_miss === 0 || missCount < rec.best_miss) {
-            rec.best_miss = missCount;
-        }
+        if (wpm > rec.best_wpm) rec.best_wpm = wpm;
+        if (maxWpm > rec.best_max_wpm) rec.best_max_wpm = maxWpm;
+        if (rkpm > rec.best_rkpm) rec.best_rkpm = rkpm;
 
         saveRecords(records);
         resultSaved = true;
     }
-    // ▲▲▲ ここまで保存処理 ▲▲▲
 
+    // ===== 描画（Python版と完全一致）=====
     ctx.font = '40px "Hiragino Sans"';
-    ctx.fillText(`スコア: ${score}`, 300, 180);
-    ctx.fillText(`ランク: ${rank}`, 300, 230);
-    ctx.fillText(`WPM: ${showWpm}`, 300, 280);
-    ctx.fillText(`最高WPM: ${maxWpm}`, 300, 330);
-    ctx.fillText(`RKPM: ${rkpm}`, 300, 380);
-    ctx.fillText(`正答率: ${accuracy}%`, 300, 430);
-    ctx.fillText(`ミス: ${missCount}`, 300, 480);
+
+    ctx.fillStyle = `rgb(${rankColor[0]},${rankColor[1]},${rankColor[2]})`;
+    ctx.fillText(`ランク: ${rank}`, 300, 120);
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.fillText(`スコア: ${score}`, 300, 160);
+    ctx.fillText(`WPM: ${wpm}`, 300, 200);
+    ctx.fillText(`正確性: ${accuracy}%`, 300, 240);
+
+    ctx.fillStyle = rgb(theme.miss);
+    ctx.fillText(`ミス数: ${missCount}`, 300, 280);
+
+    ctx.fillStyle = rgb(theme.text);
+    ctx.fillText(`最高WPM: ${maxWpm}`, 300, 320);
+    ctx.fillText(`RKPM: ${rkpm}`, 300, 360);
 
     ctx.fillStyle = rgb(theme.subtext);
     ctx.font = '30px "Hiragino Sans"';
-    ctx.fillText("Enterでタイトルへ", 300, 530);
+    ctx.fillText("Enterでタイトルへ", 300, 420);
 }
+
 
 
 // ================== メインループ ==================
