@@ -161,29 +161,30 @@ function applySmall(candidates, small) {
 
     const newList = [];
     for (const c of candidates) {
+        // 子音部分と母音部分を分離
         let base = c;
         while (base && "aiueo".includes(base[base.length-1])) {
             base = base.slice(0, -1);
         }
         const lastVowel = c.slice(base.length);
 
-        for (const p of table[small]) {
-            newList.push(base + lastVowel + p);
-            if (newList.length >= MAX_CANDIDATES) return newList;
-        }
-
+        // ★ 標準 gya / gyo / ryu / mya を最優先で生成
         if (lastVowel === "i") {
             const cons = base;
             const v = normalVowel[small];
-            newList.push(cons + "y" + v);
-        } else {
-            const v = normalVowel[small];
-            newList.push(base + "y" + v);
+            newList.push(cons + "y" + v);  // gya / gyo / ryu / mya
         }
-        if (newList.length >= MAX_CANDIDATES) return newList;
+
+        // 既存の変態ローマ字
+        for (const p of table[small]) {
+            newList.push(base + lastVowel + p);
+        }
+
+        if (newList.length >= MAX_CANDIDATES) break;
     }
     return newList;
 }
+
 
 function buildCandidates(hira) {
     let candidates = [""];
