@@ -142,33 +142,69 @@ function getPatterns(ch, nextCh=null) {
     return base[ch] || [ch];
 }
 
-function applySmall(candidates, small) {
+function applySmall(candidates, smallKana) {
+    // 小文字そのもの
     const table = {
-        "ゃ": ["xya","lya","ya"],
-        "ゅ": ["xyu","lyu","yu"],
-        "ょ": ["xyo","lyo","yo"],
+        "ゃ": ["xya", "lya", "ya"],
+        "ゅ": ["xyu", "lyu", "yu"],
+        "ょ": ["xyo", "lyo", "yo"]
     };
 
-    const normal = {
-        "ゃ": "ya",
-        "ゅ": "yu",
-        "ょ": "yo",
+    // 標準拗音（kya / sha / cha / jo など）
+    const normalMap = {
+        "ゃ": {
+            "k": "kya", "g": "gya",
+            "s": "sha", "z": "ja", "j": "ja",
+            "t": "cha", "d": "ja",
+            "n": "nya",
+            "h": "hya", "b": "bya", "p": "pya",
+            "m": "mya", "r": "rya"
+        },
+        "ゅ": {
+            "k": "kyu", "g": "gyu",
+            "s": "shu", "z": "ju", "j": "ju",
+            "t": "chu", "d": "ju",
+            "n": "nyu",
+            "h": "hyu", "b": "byu", "p": "pyu",
+            "m": "myu", "r": "ryu"
+        },
+        "ょ": {
+            "k": "kyo", "g": "gyo",
+            "s": "sho", "z": "jo", "j": "jo",
+            "t": "cho", "d": "jo",
+            "n": "nyo",
+            "h": "hyo", "b": "byo", "p": "pyo",
+            "m": "myo", "r": "ryo"
+        }
     };
 
-    const newList = [];
-    for (const c of candidates) {
-        let base = c;
-        while (base && "aiueo".includes(base[base.length-1])) {
-            base = base.slice(0, -1);
+    let result = [];
+
+    for (let c of candidates) {
+        // 子音部分（最後の母音を削る）
+        let base = c.replace(/[aiueo]+$/, "");
+        let lastVowel = c.slice(base.length);
+
+        // x系・l系・小文字
+        for (let p of table[smallKana]) {
+            result.push(base + lastVowel + p);
         }
-        const lastVowel = c.slice(base.length);
-        for (const p of table[small]) {
-            newList.push(base + lastVowel + p);
+
+        // 標準拗音（kya / sha / cha / jo）
+        if (base.length > 0) {
+            let head = base[0];
+            if (normalMap[smallKana][head]) {
+                result.push(normalMap[smallKana][head]);
+            }
         }
-        newList.push(base + lastVowel + normal[small]);
+
+        // 変態ローマ字（shixya / jixyo / kixyu）
+        result.push(base + lastVowel + table[smallKana][0]); // xya / xyu / xyo
     }
-    return newList;
+
+    return result;
 }
+
 
 function buildCandidates(hira) {
     let candidates = [""];
