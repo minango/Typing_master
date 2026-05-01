@@ -168,14 +168,14 @@ function applySmall(candidates, small) {
         }
         const lastVowel = c.slice(base.length);
 
-        // ★ 標準 gya / gyo / ryu / mya を最優先で生成
+        // ★ 標準ローマ字（gya / gyo / ryu / mya）を最優先で生成
         if (lastVowel === "i") {
             const cons = base;
             const v = normalVowel[small];
             newList.push(cons + "y" + v);  // gya / gyo / ryu / mya
         }
 
-        // 既存の変態ローマ字
+        // 変態ローマ字
         for (const p of table[small]) {
             newList.push(base + lastVowel + p);
         }
@@ -184,6 +184,7 @@ function applySmall(candidates, small) {
     }
     return newList;
 }
+
 
 
 function buildCandidates(hira) {
