@@ -161,21 +161,18 @@ function applySmall(candidates, small) {
 
     const newList = [];
     for (const c of candidates) {
-        // 子音部分と母音部分を分離
         let base = c;
         while (base && "aiueo".includes(base[base.length-1])) {
             base = base.slice(0, -1);
         }
         const lastVowel = c.slice(base.length);
 
-        // ★ 標準ローマ字（gya / gyo / ryu / mya）を最優先で生成
         if (lastVowel === "i") {
             const cons = base;
             const v = normalVowel[small];
-            newList.push(cons + "y" + v);  // gya / gyo / ryu / mya
+            newList.push(cons + "y" + v);
         }
 
-        // 変態ローマ字
         for (const p of table[small]) {
             newList.push(base + lastVowel + p);
         }
@@ -184,8 +181,6 @@ function applySmall(candidates, small) {
     }
     return newList;
 }
-
-
 
 function buildCandidates(hira) {
     let candidates = [""];
@@ -276,7 +271,6 @@ const buttons = {
 const settingsButton = {x:820,y:440,w:60,h:40};
 const highscoreButton = {x:740,y:440,w:60,h:40};
 
-// ハイスコア画面でどのモードを表示するか
 let highscoreViewMode = "words";
 
 // ================== newProblem ==================
@@ -358,29 +352,44 @@ function rgb(arr) {
     return `rgb(${arr[0]},${arr[1]},${arr[2]})`;
 }
 
+// ★ 長文でもキャンバス内に収まるようにした版
 function drawTextMultiline(text, fontSize, color, x, y, maxWidth) {
-    ctx.font = `${fontSize}px "Hiragino Sans", sans-serif`;
-    ctx.fillStyle = color;
-    const chars = [...text];
-    const lines = [];
-    let currentLine = "";
+    function buildLines(fs) {
+        ctx.font = `${fs}px "Hiragino Sans", sans-serif`;
+        const chars = [...text];
+        const lines = [];
+        let currentLine = "";
 
-    for (const ch of chars) {
-        const testLine = currentLine + ch;
-        const w = ctx.measureText(testLine).width;
-        if (w > maxWidth) {
-            lines.push(currentLine);
-            currentLine = ch;
-        } else {
-            currentLine = testLine;
+        for (const ch of chars) {
+            const testLine = currentLine + ch;
+            const w = ctx.measureText(testLine).width;
+            if (w > maxWidth && currentLine !== "") {
+                lines.push(currentLine);
+                currentLine = ch;
+            } else {
+                currentLine = testLine;
+            }
         }
-    }
-    if (currentLine) lines.push(currentLine);
+        if (currentLine) lines.push(currentLine);
 
-    const lineHeight = fontSize * 1.2;
-    lines.forEach((line, i) => {
-        ctx.fillText(line, x, y + i * lineHeight);
-    });
+        return { lines, lineHeight: fs * 1.2, fs };
+    }
+
+    let { lines, lineHeight, fs } = buildLines(fontSize);
+
+    const maxHeight = HEIGHT - y - 40;
+    let totalHeight = lines.length * lineHeight;
+
+    if (totalHeight > maxHeight) {
+        const scale = maxHeight / totalHeight;
+        fs = Math.max(18, Math.floor(fs * scale));
+        ({ lines, lineHeight } = buildLines(fs));
+    }
+
+    ctx.fillStyle = color;
+    for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], x, y + i * lineHeight);
+    }
 }
 
 function drawRomaWithColor(fullText, typedLen, fontSize, x, y, maxWidth, typedColor, restColor) {
@@ -595,36 +604,34 @@ document.addEventListener("keydown", (e) => {
             }
 
             // ★ 完了判定を「全文一致」に限定する
-// ★ 完了判定を「全文一致」に限定する
-if (currentCandidates.includes(typed)) {
-    // typed が候補の “全文” と一致しているか確認
-    if (typed === currentRoma) {
-        const now = performance.now()/1000;
-        const problemInputs = totalInputs - problemStartInputs;
-        const problemElapsed = now - problemStartTime;
+            if (currentCandidates.includes(typed) && typed === currentRoma) {
+                const now = performance.now()/1000;
+                const problemInputs = totalInputs - problemStartInputs;
+                const problemElapsed = now - problemStartTime;
 
-        const wpm = (problemElapsed > 0)
-            ? Math.floor((problemInputs/problemElapsed)*60)
-            : 0;
+                const wpm = (problemElapsed > 0)
+                    ? Math.floor((problemInputs/problemElapsed)*60)
+                    : 0;
 
-        if (wpm > maxWpm) maxWpm = wpm;
+                if (wpm > maxWpm) maxWpm = wpm;
 
-        if (firstKeyTime !== null) {
-            const latency = firstKeyTime - problemStartTime;
-            if (latency >= 0 && latency <= 3) latencyList.push(latency);
-            showLatency = Math.round(latency*100)/100;
-        } else {
-            showLatency = 0;
+                if (firstKeyTime !== null) {
+                    const latency = firstKeyTime - problemStartTime;
+                    if (latency >= 0 && latency <= 3) latencyList.push(latency);
+                    showLatency = Math.round(latency*100)/100;
+                } else {
+                    showLatency = 0;
+                }
+
+                showWpm = wpm;
+                showTime = now;
+                pauseStart = now;
+                showing = true;
+
+                return;
+            }
         }
-
-        showWpm = wpm;
-        showTime = now;
-        pauseStart = now;
-        showing = true;
-
-        return;
     }
-}
 
     if (state === "result") {
         if (performance.now()/1000 - resultEnterTime > 0.3) {
@@ -725,8 +732,16 @@ function drawGame(theme, elapsed) {
 
     if (!showing) {
         drawTextMultiline(currentText, 40, rgb(theme.text), 100, 100, 700);
-drawRomaWithColor(currentRoma, typed.length, 40, 100, 300, 700,
-    rgb(theme.typed), rgb(theme.subtext));
+        drawRomaWithColor(
+            currentRoma,
+            typed.length,
+            40,
+            100,
+            300,
+            700,
+            rgb(theme.typed),
+            rgb(theme.subtext)
+        );
     } else {
         ctx.fillStyle = rgb(theme.text);
         ctx.font = '40px "Hiragino Sans"';
