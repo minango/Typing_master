@@ -594,25 +594,32 @@ document.addEventListener("keydown", (e) => {
                 return;
             }
 
-            if (currentCandidates.includes(typed)) {
-                const now = performance.now()/1000;
-                const problemInputs = totalInputs - problemStartInputs;
-                const problemElapsed = now - problemStartTime;
-                const wpm = (problemElapsed > 0) ? Math.floor((problemInputs/problemElapsed)*60) : 0;
-                if (wpm > maxWpm) maxWpm = wpm;
+            // ★ 完了判定を「全文一致」に限定する
+if (currentCandidates.includes(typed)) {
+    // typed が候補の “全文” と一致しているか確認
+    if (typed === currentRoma) {
+        const now = performance.now()/1000;
+        const problemInputs = totalInputs - problemStartInputs;
+        const problemElapsed = now - problemStartTime;
 
-                if (firstKeyTime !== null) {
-                    const latency = firstKeyTime - problemStartTime;
-                    if (latency >= 0 && latency <= 3) latencyList.push(latency);
-                    showLatency = Math.round(latency*100)/100;
-                } else showLatency = 0;
+        const wpm = (problemElapsed > 0) ? Math.floor((problemInputs/problemElapsed)*60) : 0;
+        if (wpm > maxWpm) maxWpm = wpm;
 
-                showWpm = wpm;
-                showTime = now;
-                pauseStart = now;
-                showing = true;
-            }
-        }
+        if (firstKeyTime !== null) {
+            const latency = firstKeyTime - problemStartTime;
+            if (latency >= 0 && latency <= 3) latencyList.push(latency);
+            showLatency = Math.round(latency*100)/100;
+        } else showLatency = 0;
+
+        showWpm = wpm;
+        showTime = now;
+        pauseStart = now;
+        showing = true;
+
+        return;
+    }
+}
+
     }
 
     if (state === "result") {
