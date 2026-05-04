@@ -377,31 +377,33 @@ function buildCandidates(hira) {
         } else if (romaTable[ch]) {
             basePatterns = romaTable[ch];
             consume = 1;
-        } else if (ch === "っ") {
+                } else if (ch === "っ") {
+            const base = cands.slice();
+            const newCands = [];
+
+            // 2) まず ltu / xtu / ltsu / xtsu で打つパターンを優先
+            const extra = ["ltu","xtu","ltsu","xtsu"];
+            for (const c of base) {
+                for (const p of extra) {
+                    newCands.push(c + p);
+                    if (newCands.length > MAX_CANDIDATES) return newCands;
+                }
+            }
+
             // 1) 次の子音を重ねるパターン
             if (i+1 < hira.length) {
                 const after = hira[i+1];
                 const pats = getPatterns(after);
                 const heads = pats.map(p => p[0]);
-                const newCands = [];
-                for (const c of cands) {
+                for (const c of base) {
                     for (const h of heads) {
                         newCands.push(c + h);
                         if (newCands.length > MAX_CANDIDATES) return newCands;
                     }
                 }
-                cands = newCands;
             }
-            // 2) xtu / ltu / ltsu / xtsu で打つパターン
-            const extra = ["ltu","xtu","ltsu","xtsu"];
-            const newCands2 = [];
-            for (const c of cands) {
-                for (const p of extra) {
-                    newCands2.push(c + p);
-                    if (newCands2.length > MAX_CANDIDATES) return newCands2;
-                }
-            }
-            cands = newCands2;
+
+            cands = newCands;
             i++;
             continue;
         } else {
@@ -929,22 +931,24 @@ function drawGame(theme, elapsed) {
     ctx.fillStyle = rgb(theme.miss);
     ctx.fillText(`ミス: ${missCount}`, 10, 40);
 
-    // 文章は常に表示
-    drawTextMultiline(currentText, 40, rgb(theme.text), 100, 100, 700);
-    drawRomaWithColor(
-        currentRoma,
-        typed.length,
-        40,
-        100,
-        300,
-        700,
-        rgb(theme.typed),
-        rgb(theme.subtext)
-    );
-
-    // WPM表示中は上から重ねて出す
-    if (showing) {
-        ctx.fillStyle = rgb(theme.text);
+    if (!showing) {
+        // ★ 通常時だけ文章とローマ字を表示
+        drawTextMultiline(currentText, 40, rgb(theme.text), 100, 100, 700);
+        drawRomaWithColor(
+            currentRoma,
+            typed.length,
+            40,
+            100,
+            300,
+            700,
+            rgb(theme.typed),
+            rgb(theme.subtext)
+        );
+    } else {
+        // ★ WPM表示中は文章を消して、中央に2行だけ
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = rgb(theme.typed);
         ctx.font = '40px "Hiragino Sans"';
         ctx.fillText(`${showWpm} WPM`, 330, 180);
         ctx.fillText(`${showLatency}s`, 330, 230);
