@@ -63,43 +63,36 @@ const longs_hira = [
 "あたらしいことにちょうせんするのはすこしふあんだがそのぶんせいちょうできる",
 "しゅうちゅうしているとじかんがあっというまにすぎていくきがする",
 "ゆっくりでもいいのでかくじつにまえにすすんでいくことがたいせつだ",
-
 "きのうのしっぱいをひきずらずにつぎにいかすことがじゅうようになる",
 "むりをせずじぶんのぺーすでつづけることがいちばんながつづきする",
 "もくひょうをすこしひくくせっていするとたっせいしやすくなることもある",
 "まわりとくらべるよりもじぶんのせいちょうをみるほうがたいせつだとおもう",
 "すこしのくふうでさぎょうこうりつはおおきくかわることがある",
-
 "しずかなかんきょうではしゅうちゅうりょくがたかまりさぎょうがはかどりやすい",
 "てきどなきゅうけいをとることでぱふぉーまんすはこうじょうする",
 "いちどたちどまってかんがえることもたいせつなじかんになる",
 "あたらしいしてんをもつことでみえるけしきがかわってくる",
 "あせらずおちついてこうどうすることでけっかはあんていする",
-
 "ひびのつみかさねがあとからおおきなさとなってあらわれる",
 "すこしずつでもつづけることがせいこうへのちかみちになる",
 "かんぺきをもとめすぎるとぎゃくにうごけなくなることがある",
 "まずはこうどうしてみることがおおきないっぽになる",
 "けっかよりもかていをたいせつにすることがじゅうようだ",
-
 "なんどもくりかえすことでしぜんとからだがおぼえていく",
 "さいしょはうまくいかなくてもじょじょになれていく",
 "しっぱいをおそれずちょうせんすることがせいちょうにつながる",
 "すこしのちがいがおおきなけっかをうむこともある",
 "じぶんのやりかたをみつけることがたいせつになる",
-
 "じかんのつかいかたしだいでいちにちのかちはおおきくかわる",
 "けいかくをたててこうどうすることでこうりつがあがる",
 "じゅうなんなかんがえかたをもつことでたいおうりょくがあがる",
 "ちいさなせいこうたいけんがじしんをそだててくれる",
 "まいにちのつみかさねがみらいをかたちづくっていく",
-
 "むりにいそぐよりもかくじつにすすむほうがけっかはよい",
 "てきせつなもくひょうせっていがもてべーしょんをたもつかぎになる",
 "しゅうかんかすることでどりょくがくにならなくなる",
 "かんきょうをととのえることもじゅうようなようそのひとつだ",
 "けいぞくするちからがもっともおおきなぶきになる",
-
 "れいせいにじょうきょうをはんだんすることがじゅうようになるばめんもある",
 "おもいきったけつだんがよいけっかをうむこともある",
 "じぶんをしんじてこうどうすることがせいこうへのだいいっぽだ",
@@ -109,7 +102,7 @@ const longs_hira = [
 
 // ================== ローマ字パターン ==================
 
-const MAX_CANDIDATES = 50000;
+const MAX_CANDIDATES = 200000;  // ← 修正：候補破綻を防ぐ
 
 function getPatterns(ch, nextCh=null) {
     const base = {
@@ -144,85 +137,6 @@ function getPatterns(ch, nextCh=null) {
 
     return base[ch] || [ch];
 }
-
-// 小さいゃゅょ適用（変態ローマ字 + 標準 gyo/myo/rya など）
-function applySmall(candidates, small) {
-    const table = {
-        "ゃ": ["xya","lya","ya"],
-        "ゅ": ["xyu","lyu","yu"],
-        "ょ": ["xyo","lyo","yo"],
-    };
-
-    const normalVowel = {
-        "ゃ": "a",
-        "ゅ": "u",
-        "ょ": "o",
-    };
-
-    const newList = [];
-    for (const c of candidates) {
-        let base = c;
-        while (base && "aiueo".includes(base[base.length-1])) {
-            base = base.slice(0, -1);
-        }
-        const lastVowel = c.slice(base.length);
-
-        if (lastVowel === "i") {
-            const cons = base;
-            const v = normalVowel[small];
-            newList.push(cons + "y" + v);
-        }
-
-        for (const p of table[small]) {
-            newList.push(base + lastVowel + p);
-        }
-
-        if (newList.length >= MAX_CANDIDATES) break;
-    }
-    return newList;
-}
-
-function buildCandidates(hira) {
-    let candidates = [""];
-    let i = 0;
-    while (i < hira.length) {
-        const ch = hira[i];
-
-        if (["ゃ","ゅ","ょ"].includes(ch)) {
-            candidates = applySmall(candidates, ch);
-            i++;
-            continue;
-        }
-
-        if (ch === "ー") {
-            const newListDash = [];
-            for (const base of candidates) {
-                newListDash.push(base + "-");
-                if (newListDash.length >= MAX_CANDIDATES) break;
-            }
-            candidates = newListDash;
-            i++;
-            continue;
-        }
-
-        const nextCh = (i+1 < hira.length) ? hira[i+1] : null;
-        const patterns = getPatterns(ch, nextCh);
-
-        const newList = [];
-        for (const base of candidates) {
-            for (const p of patterns) {
-                newList.push(base + p);
-                if (newList.length >= MAX_CANDIDATES) break;
-            }
-            if (newList.length >= MAX_CANDIDATES) break;
-        }
-        candidates = newList;
-        i++;
-        if (candidates.length >= MAX_CANDIDATES) break;
-    }
-    return candidates;
-}
-
 // ================== ゲーム状態 ==================
 
 let state = "title";
@@ -273,16 +187,23 @@ const highscoreButton = {x:740,y:440,w:60,h:40};
 
 let highscoreViewMode = "words";
 
-// ================== newProblem ==================
+// ================== 未出リスト方式 ==================
+
+let unusedList = [];
 
 function newProblem() {
     problemReady = false;
 
-    let newText;
-    while (true) {
-        newText = currentList[Math.floor(Math.random() * currentList.length)];
-        if (newText !== lastText) break;
+    // 未出リストが空なら補充
+    if (unusedList.length === 0) {
+        unusedList = [...currentList];
     }
+
+    // ランダムに1つ取り出す
+    const idx = Math.floor(Math.random() * unusedList.length);
+    const newText = unusedList[idx];
+    unusedList.splice(idx, 1);
+
     currentText = newText;
     lastText = newText;
 
@@ -292,6 +213,7 @@ function newProblem() {
     currentRoma = "";
     currentCandidates = buildCandidates(hira);
 
+    // 正解ローマ字（最短候補）を構築
     let i = 0;
     while (i < hira.length) {
         const ch = hira[i];
@@ -327,6 +249,7 @@ function newProblem() {
     problemStartTime = performance.now() / 1000;
     problemStartInputs = totalInputs;
 
+    // prefixMap キャッシュ
     if (!prefixMapCache[currentText]) {
         const prefixMap = {};
         for (const c of currentCandidates) {
@@ -411,7 +334,6 @@ function drawRomaWithColor(fullText, typedLen, fontSize, x, y, maxWidth, typedCo
         cx += w;
     }
 }
-
 // ================== テーマ ==================
 
 const themes = {
@@ -603,7 +525,7 @@ document.addEventListener("keydown", (e) => {
                 return;
             }
 
-            // ★ 完了判定を「全文一致」に限定する
+            // ★ 完了判定（全文一致のみ）
             if (currentCandidates.includes(typed) && typed === currentRoma) {
                 const now = performance.now()/1000;
                 const problemInputs = totalInputs - problemStartInputs;
@@ -848,8 +770,11 @@ function loop() {
     }
 
     let elapsed;
-    if (showing) elapsed = showTime - startTime - pauseTotal;
-    else elapsed = now - startTime - pauseTotal;
+    if (showing) {
+        elapsed = showTime - startTime - pauseTotal;
+    } else {
+        elapsed = now - startTime - pauseTotal;
+    }
 
     if (state === "game" && elapsed >= gameTime) {
         state = "result";
