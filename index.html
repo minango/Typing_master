@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>TypeMaster JS (Complete)</title>
+<title>TypeMaster JS (Offline)</title>
 <style>
     body {
         margin: 0;
@@ -38,390 +38,194 @@ const words_hira = [
 "うんどう","そうこう","ちょうやく","きんにく","れんしゅう","しあい","しょうり","はいぼく","ちょうせん","きろくこうしん"
 ];
 
-// ================== 短文（元 + 打ちやすい追加50） ==================
-
 const shorts_hira = [
-"きょうはてんきがいい","しずかなあさがすき","ゆっくりあるいてかえる","すこしだけきゅうけいする",
-"おんがくをききながらすすむ","あめのひはいえですごす","あたらしいほんをよみはじめる","ともだちとわらいあう",
-"はやおきはきもちいい","よぞらをみあげる","かぜがここちよくふく","よていをかくにんする","つくえのうえをせいりする",
-"こーひーをのむ","まどをあけてくうきをいれる","かるくうんどうしてみる","しゅうちゅうしてさぎょうする",
-"すこしとおまわりしてかえる","そらをぼんやりながめる","すきなきょくをながす","ゆっくりしんこきゅうする",
-"しずかなじかんをたのしむ","きぶんてんかんにそとへでる","あたらしいことをためす","めもをとりながらすすめる",
+"きょうはてんきがいい","しずかなあさがすき","ゆっくりあるいてかえる","すこしだけきゅうけいする","おんがくをききながらすすむ",
+"あめのひはいえですごす","あたらしいほんをよみはじめる","ともだちとわらいあう","はやおきはきもちいい","よぞらをみあげる",
+"かぜがここちよくふく","よていをかくにんする","つくえのうえをせいりする","こーひーをのむ","まどをあけてくうきをいれる",
+"かるくうんどうしてみる","しゅうちゅうしてさぎょうする","すこしとおまわりしてかえる","そらをぼんやりながめる","すきなきょくをながす",
+"ゆっくりしんこきゅうする","しずかなじかんをたのしむ","きぶんてんかんにそとへでる","あたらしいことをためす","めもをとりながらすすめる",
 "よていをたてなおす","ていねいにさぎょうする","むりせずつづける","すこしずつすすめる","もくひょうをきめる",
-"おちついてかんがえる","まわりをよくみる","しんちょうにこうどうする","いっぽずつすすむ",
-"すこしやすんでからさいかいする","しゅうちゅうりょくをたもつ","りずむよくすすめる","ふかくかんがえすぎない",
-"かるくわらってみる","きらくにとりくむ","あたらしいはっけんをたのしむ","くふうしてみる","きぶんをかえてみる",
-"やりかたをみなおす","ちいさなせいこうをよろこぶ","きをぬかずにすすむ","あせらずとりくむ","しっかりかくにんする",
-"つぎのじゅんびをする","ながれをたいせつにする","むだをへらす","こうりつよくうごく","しぜんにすすめる",
-"よゆうをもつ","じかんをたいせつにする","すこしちょうせんしてみる","かんがえかたをかえる","してんをひろげる",
-"たのしみながらやる","けっかをふりかえる","つぎにいかす","かいぜんしていく","つづけることがだいじ",
-"きもちをととのえる","あんていしてすすむ","ながれをとめない","とちゅうであきらめない","さいごまでやりきる",
-"しぜんたいですすむ","ちからをぬいてやる","すこしくふうする","じょうきょうをみきわめる","じゅうなんにたいおうする",
-"れいせいにはんだんする","じぶんのぺーすですすむ","すこしずつなれていく","くりかえしておぼえる","おちついてうつ",
-"せいかくにすすめる","ていねいにしあげる",
-
-// ★ 追加50文（打ちやすい版）
-"きょうはゆっくりとしゃわーをあびる",
-"しゅうまつはゆうっくりすごしたい",
-"ちいさなきょうかしょをひらいてよむ",
-"しょくごにちょっとだけさんぽをする",
-"ちゃいろのこーひーをゆっくりのむ",
-"しゅくだいをちゃっとおわらせてあそぶ",
-"きょうはちょっとだけはやくねむる",
-"しゅみのじかんをたいせつにつかう",
-"ちいさなゆめをすこしずつかなえていく",
-"しゅうちゅうしてしごとをすすめる",
-"きょうはゆうがたにゆっくりあるく",
-"しょるいをきちんとならべなおす",
-"ちゃっときぶんをきりかえてすすむ",
-"しゅうまつのよていをゆっくりたてる",
-"ちいさなこうえんでゆっくりすわる",
-"しゅわしゅわののみものをすこしのむ",
-"きょうはちょっとだけとおくまであるく",
-"しょくどうでゆっくりごはんをたべる",
-"ちゃいろのくつをていねいにみがく",
-"しゅくだいをすこしずつおわらせていく",
-"ちいさなこえでゆっくりはなしてみる",
-"しゅうかんをすこしずつかえていく",
-"きょうはちょっとだけはやくおきる",
-"しょくじのまえにてをきちんとあらう",
-"ちゃいろのてーぶるにすわってやすむ",
-"しゅうでんまえにゆっくりかえるじゅんびをする",
-"ちいさなゆうきをだしてこえをかける",
-"しゅうごうじかんにおくれないようにうごく",
-"きょうはゆうやけがとてもきれいにみえる",
-"しょくごにちょっとだけすいみんをとる",
-"ちゃいろのかばんをしっかりともつ",
-"しゅうまつのよていをかみにかきだす",
-"ちいさなうたをくちずさみながらあるく",
-"しゅわしゅわのそーだをゆっくりのむ",
-"きょうはちょっとだけあたらしいみちをあるく",
-"しょくじのあとにちゃっとかたづける",
-"ちゃいろのいすにすわってやすむ",
-"しゅくだいをおわらせてからゆっくりあそぶ",
-"ちいさなゆめをこころのなかでとなえる",
-"しゅうちゅうしてきーぼーどをうつ",
-"きょうはゆっくりとたいぷれんしゅうをする",
-"しょるいをちゃっとならべなおしてすっきりさせる",
-"ちゃっときもちをきりかえてつぎへすすむ",
-"しゅうまつはゆっくりたいぷげーむをたのしむ",
-"ちいさなきーをたくさんつかってうつ",
-"しゅうごうまえにゆっくりしんこきゅうをする",
-"きょうはちょっとだけむずかしいぶんをうつ",
-"しょくごにゆっくりたいぷのれんしゅうをする",
-"ちゃいろのきーぼーどをたのしくたたく"
+"おちついてかんがえる","まわりをよくみる","しんちょうにこうどうする","いっぽずつすすむ","すこしやすんでからさいかいする",
+"しゅうちゅうりょくをたもつ","りずむよくすすめる","ふかくかんがえすぎない","かるくわらってみる","きらくにとりくむ",
+"あたらしいはっけんをたのしむ","くふうしてみる","きぶんをかえてみる","やりかたをみなおす","ちいさなせいこうをよろこぶ",
+"きをぬかずにすすむ","あせらずとりくむ","しっかりかくにんする","つぎのじゅんびをする","ながれをたいせつにする",
+"むだをへらす","こうりつよくうごく","しぜんにすすめる","よゆうをもつ","じかんをたいせつにする",
+"すこしちょうせんしてみる","かんがえかたをかえる","してんをひろげる","たのしみながらやる","けっかをふりかえる",
+"つぎにいかす","かいぜんしていく","つづけることがだいじ","きもちをととのえる","あんていしてすすむ",
+"ながれをとめない","とちゅうであきらめない","さいごまでやりきる","しぜんたいですすむ","ちからをぬいてやる",
+"すこしくふうする","じょうきょうをみきわめる","じゅうなんにたいおうする","れいせいにはんだんする","じぶんのぺーすですすむ",
+"すこしずつなれていく","くりかえしておぼえる","おちついてうつ","せいかくにすすめる","ていねいにしあげる"
 ];
-
-// ================== 長文（元 + 追加） ==================
 
 const longs_hira = [
-"きょうはあさからそらがあおくすんでいてこころがおだやかになった",
-"しずかなへやのなかでゆっくりとほんをよむじかんがすきだ",
-"あめのおとをききながらあたたかいのみものをのむとおちつく",
-"ゆうがたのこうえんをあるいているとやさしいかぜがほほをなでた",
-"ひとりでさんぽをしているとあたまのなかがすこしずつかたづいていく",
-"あたらしいことにちょうせんするときはすこしふあんもあるけれどわくわくもおおきい",
-"しごとがおわったあとにのんびりそらをながめるのがひそかなたのしみだ",
-"すこしはやくおきたあさはじぶんだけのじかんがふえたようできもちがいい",
-"よるのおちついたじかんにきょういちにちをふりかえるくせがついてきた",
-"あたらしいばしょへいくとちいさなはっけんがいくつもあってたのしい",
-"しずかなかふぇでおちついてさぎょうをしているとじかんをわすれてしまう",
-"まどのそとをながめているととおりすぎていくひとびとのいろいろなものがたりをそうぞうしてしまう",
-"あたらしいほんをてにとるときはどんなせかいがひろがっているのかとこころがおどる",
-"すこしとおくまであるいてみるといつもとはちがうけしきがみえてくる",
-"ひさしぶりにあったともだちとはなしをするとじかんがあっというまにすぎていく",
-"なにげないいちにちのなかにもよくみるとちいさなよろこびがかくれている",
-"しずかなよるにすきなおんがくをききながらめをとじるとこころがおちついていく",
-"あたらしいことをまなぶとじぶんのせかいがすこしひろがったようにかんじる",
-"こまったときにはいちどふかくしんこきゅうをしてからかんがえるようにしている",
-"あさのひかりがへやにはいってくるときょうもがんばろうというきもちになる",
-"ひとつひとつのささいなこうどうがあとからおおきなちがいになってあらわれることがある",
-"なにかにまよったときはいちどたちどまってじぶんのきもちをたしかめるようにしている",
-"あたらしいひととであうとじぶんのしらなかったかんがえかたにふれることができる",
-"しずかなばしょでこころをおちつけるじかんはいそがしいひどりょくたいせつだとおもう",
-"すこしだけむずかしいことにちょうせんするとじぶんのせいちょうをかんじられる",
-"なにげなくかいたことばがあとからじぶんをささえてくれることがある",
-"あたらしいしゅうかんをみにつけるにはあせらずすこしずつつづけることがたいせつだ",
-"ひとりのじかんとだれかとすごすじかんのりょうほうがじぶんにはひつようだとおもう",
-"きょうのできごとをすこしだけめもしておくとあとでよみかえしたときにおもしろい",
-"しっぱいしたとしてもそれをつぎにいかせばむだにはならないとかんがえるようにしている",
-"きょうはいつもよりすこしだけゆっくりとじかんがながれているようにかんじた",
-"あたらしいことにちょうせんするたびにじぶんのかのうせいがひろがっていくのをじっかんする",
-"しずかなじかんをすごすことでこころのざわつきがすこしずつおさまっていく",
-"むりをしないでじぶんのぺーすであるくことがながくつづけるためのこつだとおもう",
-"あたらしいけしきをみるとちいさなはっけんがいくつもみつかってたのしくなる",
-"すこしのゆうきをだすだけでみえるせかいががらりとかわることがある",
-"きのうまでできなかったことがきょうはすこしだけできるようになっていた",
-"あたらしいひらめきはしずかなじかんのなかでふとあらわれることがおおい",
-"じぶんのきもちをたいせつにしながらすすむことでむりなくつづけられる",
-"すこしのくふうでにちじょうがぐっとかいてきになることにきづいた",
-"あたらしいことをはじめるときはふあんもあるがわくわくもおなじくらいおおきい",
-"しずかにめをとじるとこころのなかのざわめきがすこしずつしずまっていく",
-"すこしずつでもまいにちつづけることでおおきなちからになっていく",
-"あたらしいしゅうかんをみにつけるにはまずちいさなことからはじめるのがいちばんだ",
-"こころにのこったことばがじぶんをささえてくれることがある",
-"すこしのゆとりがあるだけでまわりのけしきがちがってみえる",
-"あたらしいであいがじぶんをおおきくかえてくれることもある",
-"しずかなじかんをもつことであたまのなかがすっきりしていく",
-"すこしのがまんがあとでおおきなせいちょうにつながる",
-"あたらしいことをしるよろこびはなんどあじわってもあきない",
-"こころがおちつくとまわりのこえがよくきこえるようになる",
-"すこしのしっぱいはつぎへのだいじなけいけんになる",
-"あたらしいかんがえかたをしることでじぶんのせかいがひろがる",
-"しずかにじぶんとむきあうじかんがときにはひつようになる",
-"すこしのゆうきがあればむずかしいこともすこしだけやさしくなる",
-"あたらしいことをはじめるときはまずいっぽふみだすことがたいせつだ",
-"こころにひっかかったことをそのままにせずむきあうようにしている",
-"すこしのへんかがにちじょうをたのしくしてくれる",
-"あたらしいけしきをみるとこころがすこしだけかるくなる",
-"しずかなばしょにいるとじぶんのこえがよくきこえるようになる",
-"すこしのきっかけでじぶんがかわることがある",
-"あたらしいことをまなぶときはわくわくがとまらない",
-"こころにゆとりがあるとひとのやさしさにきづきやすくなる",
-"すこしのがんばりがあとでおおきなじしんになる",
-"あたらしいであいがじぶんのせかいをひろげてくれる",
-"しずかにすごすじかんがこころのえいようになる",
-"すこしのきづきがじぶんをおおきくかえてくれる",
-"あたらしいことにめをむけるとまいにちがすこしたのしくなる",
-"こころをととのえることであたまのなかがすっきりする",
-"すこしのゆうきでむずかしいことものりこえられる",
-"あたらしいしゅうかんをつくるとにちじょうがすこしずつかわっていく",
-"しずかなじかんがじぶんをりせっとしてくれる",
-"すこしのへんかをたのしめるようになるとまいにちがいきいきする",
-"あたらしいことをしるとこころがすこしおどる",
-"こころにひびくことばがじぶんをまえにすすめてくれる",
-"すこしのゆとりがあるだけでひとにやさしくなれる",
-"あたらしいけしきをみるとこころがすこしひらける",
-"しずかにすごすじかんがじぶんをおちつかせてくれる",
-"すこしのいっぽがじぶんをおおきくかえてくれる"
+"きょうはすこしはやおきをしてしずかなじかんをゆっくりすごしてみた",
+"なにげないにちじょうのなかにもちいさなたのしさはたくさんかくれている",
+"あたらしいことにちょうせんするのはすこしふあんだがそのぶんせいちょうできる",
+"しゅうちゅうしているとじかんがあっというまにすぎていくきがする",
+"ゆっくりでもいいのでかくじつにまえにすすんでいくことがたいせつだ",
+
+"きのうのしっぱいをひきずらずにつぎにいかすことがじゅうようになる",
+"むりをせずじぶんのぺーすでつづけることがいちばんながつづきする",
+"もくひょうをすこしひくくせっていするとたっせいしやすくなることもある",
+"まわりとくらべるよりもじぶんのせいちょうをみるほうがたいせつだとおもう",
+"すこしのくふうでさぎょうこうりつはおおきくかわることがある",
+
+"しずかなかんきょうではしゅうちゅうりょくがたかまりさぎょうがはかどりやすい",
+"てきどなきゅうけいをとることでぱふぉーまんすはこうじょうする",
+"いちどたちどまってかんがえることもたいせつなじかんになる",
+"あたらしいしてんをもつことでみえるけしきがかわってくる",
+"あせらずおちついてこうどうすることでけっかはあんていする",
+
+"ひびのつみかさねがあとからおおきなさとなってあらわれる",
+"すこしずつでもつづけることがせいこうへのちかみちになる",
+"かんぺきをもとめすぎるとぎゃくにうごけなくなることがある",
+"まずはこうどうしてみることがおおきないっぽになる",
+"けっかよりもかていをたいせつにすることがじゅうようだ",
+
+"なんどもくりかえすことでしぜんとからだがおぼえていく",
+"さいしょはうまくいかなくてもじょじょになれていく",
+"しっぱいをおそれずちょうせんすることがせいちょうにつながる",
+"すこしのちがいがおおきなけっかをうむこともある",
+"じぶんのやりかたをみつけることがたいせつになる",
+
+"じかんのつかいかたしだいでいちにちのかちはおおきくかわる",
+"けいかくをたててこうどうすることでこうりつがあがる",
+"じゅうなんなかんがえかたをもつことでたいおうりょくがあがる",
+"ちいさなせいこうたいけんがじしんをそだててくれる",
+"まいにちのつみかさねがみらいをかたちづくっていく",
+
+"むりにいそぐよりもかくじつにすすむほうがけっかはよい",
+"てきせつなもくひょうせっていがもてべーしょんをたもつかぎになる",
+"しゅうかんかすることでどりょくがくにならなくなる",
+"かんきょうをととのえることもじゅうようなようそのひとつだ",
+"けいぞくするちからがもっともおおきなぶきになる",
+
+"れいせいにじょうきょうをはんだんすることがじゅうようになるばめんもある",
+"おもいきったけつだんがよいけっかをうむこともある",
+"じぶんをしんじてこうどうすることがせいこうへのだいいっぽだ",
+"けいけんをかさねることでけつだんするちからはどんどんみがかれていく",
+"しやをひろげることであたらしいかのうせいがみえてくる"
 ];
 
-// ================== ローマ字変換テーブル ==================
+// ================== ローマ字パターン ==================
 
-const romaTable = {
-    // 母音
-    "あ":["a"],
-    "い":["i","yi"],
-    "う":["u","wu","whu"],
-    "え":["e"],
-    "お":["o"],
+const MAX_CANDIDATES = 50000;
 
-    // か行 + ca,cu,co
-    "か":["ka","ca"],
-    "き":["ki"],
-    "く":["ku","cu","qu"],
-    "け":["ke"],
-    "こ":["ko","co"],
+function getPatterns(ch, nextCh=null) {
+    const base = {
+        "あ":["a"],"い":["i","yi"],"う":["u","wu","whu"],"え":["e"],"お":["o"],
+        "か":["ka","ca"],"き":["ki"],"く":["ku","cu"],"け":["ke"],"こ":["ko","co"],
+        "さ":["sa"],"し":["shi","si","ci"],"す":["su"],"せ":["se","ce"],"そ":["so"],
+        "た":["ta"],"ち":["chi","ti"],"つ":["tsu","tu"],"て":["te"],"と":["to"],
+        "な":["na"],"に":["ni"],"ぬ":["nu"],"ね":["ne"],"の":["no"],
+        "は":["ha"],"ひ":["hi"],"ふ":["fu","hu"],"へ":["he"],"ほ":["ho"],
+        "ま":["ma"],"み":["mi"],"む":["mu"],"め":["me"],"も":["mo"],
+        "や":["ya"],"ゆ":["yu"],"よ":["yo"],
+        "ら":["ra"],"り":["ri"],"る":["ru"],"れ":["re"],"ろ":["ro"],
+        "わ":["wa"],"を":["wo"],
+        "が":["ga"],"ぎ":["gi"],"ぐ":["gu"],"げ":["ge"],"ご":["go"],
+        "ざ":["za"],"じ":["ji","zi"],"ず":["zu"],"ぜ":["ze"],"ぞ":["zo"],
+        "だ":["da"],"ぢ":["di"],"づ":["du"],"で":["de"],"ど":["do"],
+        "ば":["ba"],"び":["bi"],"ぶ":["bu"],"べ":["be"],"ぼ":["bo"],
+        "ぱ":["pa"],"ぴ":["pi"],"ぷ":["pu"],"ぺ":["pe"],"ぽ":["po"],
+    };
 
-    // さ行
-    "さ":["sa"],
-    "し":["shi","si","ci"],
-    "す":["su"],
-    "せ":["se"],
-    "そ":["so"],
+    if (ch === "ん") {
+        const patterns = ["nn","xn"];
+        if (!["あ","い","う","え","お","や","ゆ","よ","な","に","ぬ","ね","の"].includes(nextCh)) {
+            patterns.push("n");
+        }
+        return patterns;
+    }
 
-    // た行 + ti,tu
-    "た":["ta"],
-    "ち":["chi","ti"],
-    "つ":["tsu","tu"],
-    "て":["te"],
-    "と":["to"],
+    if (ch === "っ") {
+        return ["ltu","xtu","ltsu","xtsu"];
+    }
 
-    // な行
-    "な":["na"],
-    "に":["ni"],
-    "ぬ":["nu"],
-    "ね":["ne"],
-    "の":["no"],
-
-    // は行 + fu/hu
-    "は":["ha"],
-    "ひ":["hi"],
-    "ふ":["fu","hu"],
-    "へ":["he"],
-    "ほ":["ho"],
-
-    // ま行
-    "ま":["ma"],
-    "み":["mi"],
-    "む":["mu"],
-    "め":["me"],
-    "も":["mo"],
-
-    // や行
-    "や":["ya"],
-    "ゆ":["yu"],
-    "よ":["yo"],
-
-    // ら行
-    "ら":["ra"],
-    "り":["ri"],
-    "る":["ru"],
-    "れ":["re"],
-    "ろ":["ro"],
-
-    // わ行
-    "わ":["wa"],
-    "を":["wo"],
-    "ん":["nn","n","xn"],
-
-    // 濁音
-    "が":["ga"],
-    "ぎ":["gi"],
-    "ぐ":["gu"],
-    "げ":["ge"],
-    "ご":["go"],
-
-    "ざ":["za"],
-    "じ":["ji","zi"],
-    "ず":["zu"],
-    "ぜ":["ze"],
-    "ぞ":["zo"],
-
-    "だ":["da"],
-    "ぢ":["di"],
-    "づ":["du"],
-    "で":["de"],
-    "ど":["do"],
-
-    "ば":["ba"],
-    "び":["bi"],
-    "ぶ":["bu"],
-    "べ":["be"],
-    "ぼ":["bo"],
-
-    "ぱ":["pa"],
-    "ぴ":["pi"],
-    "ぷ":["pu"],
-    "ぺ":["pe"],
-    "ぽ":["po"],
-
-    // 拗音（きゃ行）
-    "きゃ":["kya","kixya","kilya"],
-    "きゅ":["kyu","kixyu","kilyu"],
-    "きょ":["kyo","kixyo","kilyo"],
-
-    // しゃ行
-    "しゃ":["sha","sya","shixya"],
-    "しゅ":["shu","syu","shixyu"],
-    "しょ":["sho","syo","shixyo"],
-
-    // ちゃ行（tya/tyu/tyo + chixya系）
-    "ちゃ":["cha","tya","cya","chixya"],
-    "ちゅ":["chu","tyu","cyu","chixyu"],
-    "ちょ":["cho","tyo","cyo","chixyo"],
-
-    // にゃ行
-    "にゃ":["nya"],
-    "にゅ":["nyu"],
-    "にょ":["nyo"],
-
-    // ひゃ行（hixya系）
-    "ひゃ":["hya","hixya"],
-    "ひゅ":["hyu","hixyu"],
-    "ひょ":["hyo","hixyo"],
-
-    // みゃ行（mixya系）
-    "みゃ":["mya","mixya"],
-    "みゅ":["myu","mixyu"],
-    "みょ":["myo","mixyo"],
-
-    // りゃ行（rixya系）
-    "りゃ":["rya","rixya"],
-    "りゅ":["ryu","rixyu"],
-    "りょ":["ryo","rixyo"],
-
-    // ぎゃ行
-    "ぎゃ":["gya"],
-    "ぎゅ":["gyu"],
-    "ぎょ":["gyo"],
-
-    // じゃ行（jixya系）
-    "じゃ":["ja","jya","zya","jixya"],
-    "じゅ":["ju","jyu","zyu","jixyu"],
-    "じょ":["jo","jyo","zyo","jixyo"],
-
-    // びゃ行
-    "びゃ":["bya"],
-    "びゅ":["byu"],
-    "びょ":["byo"],
-
-    // ぴゃ行
-    "ぴゃ":["pya"],
-    "ぴゅ":["pyu"],
-    "ぴょ":["pyo"]
-};
-
-function getPatterns(h) {
-    if (romaTable[h]) return romaTable[h];
-    return ["?"];
+    return base[ch] || [ch];
 }
 
-// ================== ローマ字候補生成 ==================
+// 小さいゃゅょ適用（変態ローマ字 + 標準 gyo/myo/rya など）
+function applySmall(candidates, small) {
+    const table = {
+        "ゃ": ["xya","lya","ya"],
+        "ゅ": ["xyu","lyu","yu"],
+        "ょ": ["xyo","lyo","yo"],
+    };
 
-const MAX_CANDIDATES = 200000;
+    const normalVowel = {
+        "ゃ": "a",
+        "ゅ": "u",
+        "ょ": "o",
+    };
+
+    const newList = [];
+    for (const c of candidates) {
+        // 子音部分と母音部分を分離
+        let base = c;
+        while (base && "aiueo".includes(base[base.length-1])) {
+            base = base.slice(0, -1);
+        }
+        const lastVowel = c.slice(base.length);
+
+        // ★ 標準ローマ字（gya / gyo / ryu / mya）を最優先で生成
+        if (lastVowel === "i") {
+            const cons = base;
+            const v = normalVowel[small];
+            newList.push(cons + "y" + v);  // gya / gyo / ryu / mya
+        }
+
+        // 変態ローマ字
+        for (const p of table[small]) {
+            newList.push(base + lastVowel + p);
+        }
+
+        if (newList.length >= MAX_CANDIDATES) break;
+    }
+    return newList;
+}
+
+
 
 function buildCandidates(hira) {
-    let cands = [""];
+    let candidates = [""];
     let i = 0;
     while (i < hira.length) {
-        let ch = hira[i];
-        let next = (i+1 < hira.length) ? hira[i+1] : "";
-        let pair = ch + next;
-        let basePatterns = null;
-        let consume = 1;
+        const ch = hira[i];
 
-        if (romaTable[pair]) {
-            basePatterns = romaTable[pair];
-            consume = 2;
-        } else if (romaTable[ch]) {
-            basePatterns = romaTable[ch];
-            consume = 1;
-                } else if (ch === "っ") {
-            const base = cands.slice();
-            const newCands = [];
-
-            // 2) まず ltu / xtu / ltsu / xtsu で打つパターンを優先
-            const extra = ["ltu","xtu","ltsu","xtsu"];
-            for (const c of base) {
-                for (const p of extra) {
-                    newCands.push(c + p);
-                    if (newCands.length > MAX_CANDIDATES) return newCands;
-                }
-            }
-
-            // 1) 次の子音を重ねるパターン
-            if (i+1 < hira.length) {
-                const after = hira[i+1];
-                const pats = getPatterns(after);
-                const heads = pats.map(p => p[0]);
-                for (const c of base) {
-                    for (const h of heads) {
-                        newCands.push(c + h);
-                        if (newCands.length > MAX_CANDIDATES) return newCands;
-                    }
-                }
-            }
-
-            cands = newCands;
+        if (["ゃ","ゅ","ょ"].includes(ch)) {
+            candidates = applySmall(candidates, ch);
             i++;
             continue;
-        } else {
-            basePatterns = [ch];
-            consume = 1;
         }
 
-        const newCands = [];
-        for (const c of cands) {
-            for (const p of basePatterns) {
-                newCands.push(c + p);
-                if (newCands.length > MAX_CANDIDATES) return newCands;
+        if (ch === "ー") {
+            const newListDash = [];
+            for (const base of candidates) {
+                newListDash.push(base + "-");
+                if (newListDash.length >= MAX_CANDIDATES) break;
             }
+            candidates = newListDash;
+            i++;
+            continue;
         }
-        cands = newCands;
-        i += consume;
+
+        const nextCh = (i+1 < hira.length) ? hira[i+1] : null;
+        const patterns = getPatterns(ch, nextCh);
+
+        const newList = [];
+        for (const base of candidates) {
+            for (const p of patterns) {
+                newList.push(base + p);
+                if (newList.length >= MAX_CANDIDATES) break;
+            }
+            if (newList.length >= MAX_CANDIDATES) break;
+        }
+        candidates = newList;
+        i++;
+        if (candidates.length >= MAX_CANDIDATES) break;
     }
-    return cands;
+    return candidates;
 }
 
 // ================== ゲーム状態 ==================
@@ -472,23 +276,19 @@ const buttons = {
 const settingsButton = {x:820,y:440,w:60,h:40};
 const highscoreButton = {x:740,y:440,w:60,h:40};
 
+// ハイスコア画面でどのモードを表示するか
 let highscoreViewMode = "words";
 
-// ================== 未出リスト方式 ==================
-
-let unusedList = [];
+// ================== newProblem ==================
 
 function newProblem() {
     problemReady = false;
 
-    if (unusedList.length === 0) {
-        unusedList = [...currentList];
+    let newText;
+    while (true) {
+        newText = currentList[Math.floor(Math.random() * currentList.length)];
+        if (newText !== lastText) break;
     }
-
-    const idx = Math.floor(Math.random() * unusedList.length);
-    const newText = unusedList[idx];
-    unusedList.splice(idx, 1);
-
     currentText = newText;
     lastText = newText;
 
@@ -499,7 +299,6 @@ function newProblem() {
     currentCandidates = buildCandidates(hira);
 
     let i = 0;
-    currentRoma = "";
     while (i < hira.length) {
         const ch = hira[i];
 
@@ -560,42 +359,28 @@ function rgb(arr) {
 }
 
 function drawTextMultiline(text, fontSize, color, x, y, maxWidth) {
-    function buildLines(fs) {
-        ctx.font = `${fs}px "Hiragino Sans", sans-serif`;
-        const chars = [...text];
-        const lines = [];
-        let currentLine = "";
-
-        for (const ch of chars) {
-            const testLine = currentLine + ch;
-            const w = ctx.measureText(testLine).width;
-            if (w > maxWidth && currentLine !== "") {
-                lines.push(currentLine);
-                currentLine = ch;
-            } else {
-                currentLine = testLine;
-            }
-        }
-        if (currentLine) lines.push(currentLine);
-
-        return { lines, lineHeight: fs * 1.2, fs };
-    }
-
-    let { lines, lineHeight, fs } = buildLines(fontSize);
-
-    const maxHeight = HEIGHT - y - 40;
-    let totalHeight = lines.length * lineHeight;
-
-    if (totalHeight > maxHeight) {
-        const scale = maxHeight / totalHeight;
-        fs = Math.max(18, Math.floor(fs * scale));
-        ({ lines, lineHeight } = buildLines(fs));
-    }
-
+    ctx.font = `${fontSize}px "Hiragino Sans", sans-serif`;
     ctx.fillStyle = color;
-    for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], x, y + i * lineHeight);
+    const chars = [...text];
+    const lines = [];
+    let currentLine = "";
+
+    for (const ch of chars) {
+        const testLine = currentLine + ch;
+        const w = ctx.measureText(testLine).width;
+        if (w > maxWidth) {
+            lines.push(currentLine);
+            currentLine = ch;
+        } else {
+            currentLine = testLine;
+        }
     }
+    if (currentLine) lines.push(currentLine);
+
+    const lineHeight = fontSize * 1.2;
+    lines.forEach((line, i) => {
+        ctx.fillText(line, x, y + i * lineHeight);
+    });
 }
 
 function drawRomaWithColor(fullText, typedLen, fontSize, x, y, maxWidth, typedColor, restColor) {
@@ -762,7 +547,6 @@ canvas.addEventListener("mousedown", (e) => {
                 latencyList = [];
                 rkpm = 0;
                 resultSaved = false;
-                unusedList = [];
 
                 state = "countdown";
                 countdownStart = performance.now()/1000;
@@ -810,31 +594,23 @@ document.addEventListener("keydown", (e) => {
                 return;
             }
 
-            if (currentCandidates.includes(typed) && typed === currentRoma) {
+            if (currentCandidates.includes(typed)) {
                 const now = performance.now()/1000;
                 const problemInputs = totalInputs - problemStartInputs;
                 const problemElapsed = now - problemStartTime;
-
-                const wpm = (problemElapsed > 0)
-                    ? Math.floor((problemInputs/problemElapsed)*60)
-                    : 0;
-
+                const wpm = (problemElapsed > 0) ? Math.floor((problemInputs/problemElapsed)*60) : 0;
                 if (wpm > maxWpm) maxWpm = wpm;
 
                 if (firstKeyTime !== null) {
                     const latency = firstKeyTime - problemStartTime;
                     if (latency >= 0 && latency <= 3) latencyList.push(latency);
                     showLatency = Math.round(latency*100)/100;
-                } else {
-                    showLatency = 0;
-                }
+                } else showLatency = 0;
 
                 showWpm = wpm;
                 showTime = now;
                 pauseStart = now;
                 showing = true;
-
-                return;
             }
         }
     }
@@ -848,17 +624,22 @@ document.addEventListener("keydown", (e) => {
     if (state === "title") {
         if (e.key === "1") {
             currentList = words_hira; currentMode="words";
-        } else if (e.key === "2") {
-            currentList = shorts_hira; currentMode="shorts";
-        } else if (e.key === "3") {
-            currentList = longs_hira; currentMode="longs";
-        } else {
-            return;
+            missCount = 0; totalInputs = 0; startTime = performance.now()/1000;
+            pauseTotal = 0; maxWpm = 0; latencyList = []; rkpm = 0; resultSaved = false;
+            state = "countdown"; countdownStart = performance.now()/1000;
         }
-        missCount = 0; totalInputs = 0; startTime = performance.now()/1000;
-        pauseTotal = 0; maxWpm = 0; latencyList = []; rkpm = 0; resultSaved = false;
-        unusedList = [];
-        state = "countdown"; countdownStart = performance.now()/1000;
+        if (e.key === "2") {
+            currentList = shorts_hira; currentMode="shorts";
+            missCount = 0; totalInputs = 0; startTime = performance.now()/1000;
+            pauseTotal = 0; maxWpm = 0; latencyList = []; rkpm = 0; resultSaved = false;
+            state = "countdown"; countdownStart = performance.now()/1000;
+        }
+        if (e.key === "3") {
+            currentList = longs_hira; currentMode="longs";
+            missCount = 0; totalInputs = 0; startTime = performance.now()/1000;
+            pauseTotal = 0; maxWpm = 0; latencyList = []; rkpm = 0; resultSaved = false;
+            state = "countdown"; countdownStart = performance.now()/1000;
+        }
     }
 });
 
@@ -932,23 +713,11 @@ function drawGame(theme, elapsed) {
     ctx.fillText(`ミス: ${missCount}`, 10, 40);
 
     if (!showing) {
-        // ★ 通常時だけ文章とローマ字を表示
         drawTextMultiline(currentText, 40, rgb(theme.text), 100, 100, 700);
-        drawRomaWithColor(
-            currentRoma,
-            typed.length,
-            40,
-            100,
-            300,
-            700,
-            rgb(theme.typed),
-            rgb(theme.subtext)
-        );
+drawRomaWithColor(currentRoma, typed.length, 40, 100, 300, 700,
+    rgb(theme.typed), rgb(theme.subtext));
     } else {
-        // ★ WPM表示中は文章を消して、中央に2行だけ
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillStyle = rgb(theme.typed);
+        ctx.fillStyle = rgb(theme.text);
         ctx.font = '40px "Hiragino Sans"';
         ctx.fillText(`${showWpm} WPM`, 330, 180);
         ctx.fillText(`${showLatency}s`, 330, 230);
@@ -1053,11 +822,8 @@ function loop() {
     }
 
     let elapsed;
-    if (showing) {
-        elapsed = showTime - startTime - pauseTotal;
-    } else {
-        elapsed = now - startTime - pauseTotal;
-    }
+    if (showing) elapsed = showTime - startTime - pauseTotal;
+    else elapsed = now - startTime - pauseTotal;
 
     if (state === "game" && elapsed >= gameTime) {
         state = "result";
