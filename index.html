@@ -595,6 +595,7 @@ document.addEventListener("keydown", (e) => {
             }
 
             // ★ 完了判定を「全文一致」に限定する
+// ★ 完了判定を「全文一致」に限定する
 if (currentCandidates.includes(typed)) {
     // typed が候補の “全文” と一致しているか確認
     if (typed === currentRoma) {
@@ -602,14 +603,19 @@ if (currentCandidates.includes(typed)) {
         const problemInputs = totalInputs - problemStartInputs;
         const problemElapsed = now - problemStartTime;
 
-        const wpm = (problemElapsed > 0) ? Math.floor((problemInputs/problemElapsed)*60) : 0;
+        const wpm = (problemElapsed > 0)
+            ? Math.floor((problemInputs/problemElapsed)*60)
+            : 0;
+
         if (wpm > maxWpm) maxWpm = wpm;
 
         if (firstKeyTime !== null) {
             const latency = firstKeyTime - problemStartTime;
             if (latency >= 0 && latency <= 3) latencyList.push(latency);
             showLatency = Math.round(latency*100)/100;
-        } else showLatency = 0;
+        } else {
+            showLatency = 0;
+        }
 
         showWpm = wpm;
         showTime = now;
@@ -619,8 +625,6 @@ if (currentCandidates.includes(typed)) {
         return;
     }
 }
-
-    }
 
     if (state === "result") {
         if (performance.now()/1000 - resultEnterTime > 0.3) {
