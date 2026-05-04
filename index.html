@@ -109,7 +109,7 @@ const longs_hira = [
 
 // ================== ローマ字パターン ==================
 
-const MAX_CANDIDATES = 50000;
+const MAX_CANDIDATES = 20000;
 
 function getPatterns(ch, nextCh=null) {
     const base = {
@@ -188,8 +188,12 @@ function applySmall(candidates, small) {
 
 
 function buildCandidates(hira) {
+    // ★ 長文は制限ゆるく
+    let max = hira.length > 25 ? 300000 : 200000;
+
     let candidates = [""];
     let i = 0;
+
     while (i < hira.length) {
         const ch = hira[i];
 
@@ -203,7 +207,7 @@ function buildCandidates(hira) {
             const newListDash = [];
             for (const base of candidates) {
                 newListDash.push(base + "-");
-                if (newListDash.length >= MAX_CANDIDATES) break;
+                if (newListDash.length >= max) break;
             }
             candidates = newListDash;
             i++;
@@ -217,14 +221,17 @@ function buildCandidates(hira) {
         for (const base of candidates) {
             for (const p of patterns) {
                 newList.push(base + p);
-                if (newList.length >= MAX_CANDIDATES) break;
+                if (newList.length >= max) break;
             }
-            if (newList.length >= MAX_CANDIDATES) break;
+            if (newList.length >= max) break;
         }
+
         candidates = newList;
         i++;
-        if (candidates.length >= MAX_CANDIDATES) break;
+
+        if (candidates.length >= max) break;
     }
+
     return candidates;
 }
 
@@ -256,6 +263,7 @@ let pauseTotal = 0;
 let pauseStart = 0;
 let resultEnterTime = 0;
 let lastText = null;
+let recentTexts = [];
 let maxWpm = 0;
 let rkpm = 0;
 let latencyList = [];
@@ -285,11 +293,18 @@ function newProblem() {
     problemReady = false;
 
     let newText;
-    while (true) {
-        newText = currentList[Math.floor(Math.random() * currentList.length)];
-        if (newText !== lastText) break;
-    }
+    let tries = 0;
+while (true) {
+    newText = currentList[Math.floor(Math.random() * currentList.length)];
+    if (!recentTexts.includes(newText)) break;
+    tries++;
+    if (tries > 20) break;
+}
     currentText = newText;
+    recentTexts.push(newText);
+    if (recentTexts.length > 5) {
+        recentTexts.shift();
+    }
     lastText = newText;
 
     const hira = newText;
